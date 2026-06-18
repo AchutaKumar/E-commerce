@@ -1,0 +1,27 @@
+# Environment variables
+.env
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Python/Django
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+db.sqlite3
+media/
+
+# Node/React
+node_modules/
+dist/
+build/
+.npm/
