@@ -134,7 +134,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR/'static'
 
-ALLOWED_HOSTS = ["https://e-commerce-7dwo.onrender.com"]
+ALLOWED_HOSTS = ["e-commerce-7dwo.onrender.com"]
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
