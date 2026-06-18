@@ -1,0 +1,235 @@
+/* Auth.css (Login & Register Pages) */
+
+.pg-wrap {
+    padding: 2rem;
+    min-height: 100vh;
+    background: #f5f5f7;
+    display: flex;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+}
+
+.pg-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e8e8ed;
+    overflow: hidden;
+    width: 100%;
+    max-width: 520px;
+}
+
+.auth-card {
+    max-width: 440px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.pg-banner {
+    height: 96px;
+    background: linear-gradient(135deg, #534AB7, #3C3489);
+    position: relative;
+}
+
+.auth-banner {
+    display: flex;
+    align-items: center;
+}
+
+.pg-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #dde8fa;
+    border: 3px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #185fa5;
+    position: absolute;
+    bottom: -36px;
+    left: 1.25rem;
+}
+
+.auth-avatar {
+    background: #EEEDFE;
+    color: #534AB7;
+    border-color: #ffffff;
+    font-size: 28px;
+}
+
+.pg-body {
+    padding: 2.75rem 1.5rem 1.5rem;
+}
+
+.pg-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.pg-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 4px;
+}
+
+.pg-email {
+    font-size: 13px;
+    color: #777;
+    margin: 0 0 10px;
+}
+
+.pg-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eafaf3;
+    color: #0f6e56;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+.pg-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #1d9e75;
+}
+
+.pg-divider {
+    border: none;
+    border-top: 1px solid #f0f0f5;
+    margin: 1.25rem 0;
+}
+
+/* Form inputs & buttons */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #8e8e93;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #e0e0e8;
+    border-radius: 10px;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    background: #ffffff;
+    color: #1c1c1e;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: #534AB7;
+    box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.08);
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 11px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid #e0e0e8;
+    background: #fff;
+    color: #333;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.pg-btn-primary {
+    background: #534AB7;
+    color: #fff;
+    border-color: #534AB7;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(83, 74, 183, 0.15);
+}
+
+.pg-btn-primary:hover {
+    background: #3C3489;
+    border-color: #3C3489;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(83, 74, 183, 0.25);
+}
+
+.pg-btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Auth messages */
+.auth-msg {
+    padding: 10px 14px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 4px 0 0;
+}
+
+.auth-msg.success {
+    background: #eafaf3;
+    color: #0f6e56;
+}
+
+.auth-msg.error {
+    background: #fff1f2;
+    color: #991b1b;
+}
+
+/* Footer Link styling */
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #666;
+}
+
+.auth-footer a {
+    color: #534AB7;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 480px) {
+    .pg-wrap {
+        padding: 1rem;
+    }
+    
+    .pg-body {
+        padding: 2.5rem 1rem 1rem;
+    }
+}

@@ -1,0 +1,73 @@
+.saved-items-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    min-height: 70vh;
+}
+
+.saved-items-header {
+    margin-bottom: 30px;
+}
+
+.saved-items-header h1 {
+    font-size: 28px;
+    color: #111827;
+    margin-top: 16px;
+}
+
+.saved-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
+}
+
+.saved-items-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    background: #f9fafb;
+    border-radius: 16px;
+    border: 1px dashed #d1d5db;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.saved-items-empty h2 {
+    font-size: 20px;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.saved-items-empty p {
+    color: #6b7280;
+    margin-bottom: 24px;
+}
+
+.continue-shopping-btn {
+    background: #534AB7;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.continue-shopping-btn:hover {
+    background: #3c3489;
+}
+
+.saved-items-message {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 16px;
+}
