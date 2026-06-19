@@ -3,6 +3,7 @@ import ProductCard from '../components/ProductCard';
 import { useNavigate } from 'react-router-dom';
 import '../static/SavedItems.css';
 import * as Icon from '../components/Icons.jsx';
+import { ProductListSkeleton } from '../components/SkeletonLoader';
 
 const SavedItems = () => {
     const [savedProducts, setSavedProducts] = useState([]);
@@ -46,7 +47,7 @@ const SavedItems = () => {
             </div>
             
             {loading ? (
-                <div className="saved-items-message">Loading your saved items...</div>
+                <ProductListSkeleton count={4} />
             ) : savedProducts.length > 0 ? (
                 <div className="saved-items-grid">
                     {savedProducts.map(product => (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from '../components/ProductCard';
 import '../static/ProductList.css';
+import { ProductListSkeleton } from '../components/SkeletonLoader';
 
 function ProductList() {
     const [products, setProducts] = useState([]);
@@ -59,7 +60,23 @@ function ProductList() {
     });
 
     if (loading) {
-        return <div className="products-loader">Loading products…</div>;
+        return (
+            <div className="products-container">
+                <div className="products-catalog-header" style={{ marginBottom: '20px' }}>
+                    {query ? (
+                        <h1 className="products-title">Search results for "{query}"</h1>
+                    ) : (
+                        <div className="hero-banner">
+                            <div className="hero-content">
+                                <h1>New Arrivals</h1>
+                                <p>Discover premium quality products curated just for you.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <ProductListSkeleton count={8} />
+            </div>
+        );
     }
 
     if (error) {

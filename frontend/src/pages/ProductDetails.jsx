@@ -5,6 +5,8 @@ import { useCart } from '../context/CardContext'
 import { isAuthenticated } from '../utils/auth.js';
 import ProductCard from '../components/ProductCard';
 import * as Icon from '../components/Icons.jsx';
+import { ProductDetailSkeleton } from '../components/SkeletonLoader';
+
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -109,7 +111,22 @@ function ProductDetail() {
         if (quantity > 1) setQuantity(quantity - 1);
     };
 
-    if (loading) return <div className="product-detail-loader">Loading...</div>;
+    if (loading) {
+        return (
+            <div>
+                <div className='product-detail-container'>
+                    <button onClick={() => navigate(-1)} className="back-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14" style={{ verticalAlign: 'middle' }}>
+                            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+                        </svg>
+                        <span>Back</span>
+                    </button>
+                    <ProductDetailSkeleton />
+                </div>
+            </div>
+        );
+    }
+
     if (error) return <div className="product-detail-error">Error: {error}</div>;
     if (!product) return <div className="product-detail-error">Product not found</div>;
 

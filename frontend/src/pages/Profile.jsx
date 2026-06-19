@@ -5,6 +5,8 @@ import '../static/Profile.css';
 import { useState, useEffect } from "react";
 import React from "react";
 import * as Icon from '../components/Icons.jsx';
+import { ProfileSkeleton } from '../components/SkeletonLoader';
+
 
 const Profile = () => {
     const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
@@ -95,12 +97,7 @@ const Profile = () => {
     };
 
     if (!profileData) {
-        return (
-            <div className="profile-loading-wrap">
-                <div className="spinner"></div>
-                <p>Loading your profile...</p>
-            </div>
-        );
+        return <ProfileSkeleton />;
     }
 
     return (

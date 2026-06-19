@@ -6,8 +6,10 @@ from .serializers import UserProfileSerializer, UserRegistrationSerializer, User
 from rest_framework import status
 from .models import CartItem, OrderItem, Product, Category, Cart, Order
 from .serializers import CartSerializer, ProductSerializer, CategorySerializer
+from django.views.decorators.cache import cache_page
 
 @api_view(['GET'])
+@cache_page(60 * 15) # Cache for 15 minutes
 def get_products(req):
     product = Product.objects.select_related('category').all()
     serializer = ProductSerializer(product, many=True)
@@ -23,6 +25,7 @@ def get_product(req, pk):
         return Response({'error': 'Product not found'}, status=404)
 
 @api_view(['GET'])
+@cache_page(60 * 15) # Cache for 15 minutes
 def get_category(req):
     category = Category.objects.all()
     serializer = CategorySerializer(category, many=True)

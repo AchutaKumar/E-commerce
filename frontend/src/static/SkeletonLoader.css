@@ -1,0 +1,146 @@
+/* Base shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -800px 0;
+  }
+  100% {
+    background-position: 800px 0;
+  }
+}
+
+.skeleton-box {
+  background: #f6f7f8;
+  background-image: linear-gradient(
+    to right,
+    #f6f7f8 0%,
+    #edeef1 20%,
+    #f6f7f8 40%,
+    #f6f7f8 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 800px 100%;
+  animation-duration: 1.5s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: shimmer;
+  animation-timing-function: linear;
+  border-radius: 4px;
+}
+
+/* Product Card Skeleton */
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  gap: 12px;
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+}
+
+.skeleton-text {
+  height: 16px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-text.medium {
+  width: 80%;
+}
+
+.skeleton-button {
+  height: 40px;
+  width: 100%;
+  border-radius: 8px;
+  margin-top: auto;
+}
+
+/* Product Details Skeleton */
+.skeleton-detail-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+@media (min-width: 768px) {
+  .skeleton-detail-container {
+    flex-direction: row;
+  }
+}
+
+.skeleton-detail-image-wrapper {
+  flex: 1;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 20px;
+}
+
+.skeleton-detail-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skeleton-detail-title {
+  height: 40px;
+  width: 80%;
+  border-radius: 8px;
+}
+
+.skeleton-detail-category {
+  height: 20px;
+  width: 40%;
+}
+
+.skeleton-detail-price {
+  height: 30px;
+  width: 30%;
+}
+
+.skeleton-detail-desc {
+  height: 100px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.skeleton-detail-specs {
+  height: 120px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.skeleton-detail-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.skeleton-detail-btn {
+  height: 56px;
+  flex: 1;
+  border-radius: 12px;
+}
+
+/* Products Grid layout for skeleton cards */
+.skeleton-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  width: 100%;
+  padding: 0 5%;
+}
