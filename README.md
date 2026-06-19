@@ -1,6 +1,7 @@
 # 🛒 E-Commerce Platform
 
 A full-stack e-commerce web application featuring a modern React frontend and a robust Django REST backend.
+
 Live link https://e-commerce-1-ussz.onrender.com
 ---
 
