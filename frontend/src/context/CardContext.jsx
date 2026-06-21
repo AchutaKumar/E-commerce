@@ -7,8 +7,22 @@ const CartContext = createContext()
 export const CartProvider = ({ children }) => {
     const navigate = useNavigate();
     const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL
-    const [cartItems, setCartItems] = useState([])
-    const [total, setTotal] = useState(0)
+    const [cartItems, setCartItems] = useState(() => {
+        try {
+            const saved = localStorage.getItem('cartItems');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    });
+    const [total, setTotal] = useState(() => {
+        try {
+            const saved = localStorage.getItem('cartTotal');
+            return saved ? parseFloat(saved) : 0;
+        } catch {
+            return 0;
+        }
+    });
 
     const handleAuthError = (status) => {
         if (status === 401 || status === 403) {
@@ -20,8 +34,12 @@ export const CartProvider = ({ children }) => {
     }
 
     const updateCartState = (data) => {
-        setCartItems(data.item || [])
-        setTotal(parseFloat(data.total) || 0)
+        const items = data.item || [];
+        const t = parseFloat(data.total) || 0;
+        setCartItems(items);
+        setTotal(t);
+        localStorage.setItem('cartItems', JSON.stringify(items));
+        localStorage.setItem('cartTotal', t.toString());
     }
     
     const fetchCart = async () => {
@@ -43,14 +61,27 @@ export const CartProvider = ({ children }) => {
         }
     }, [token])
 
-    const addToCart = async (product, quantity = 1) => {
+    const addToCart = async (product_id, quantity = 1) => {
+        const previousCartItems = [...cartItems];
+        const previousTotal = total;
+
+        const existingItem = cartItems.find(item => item.product === product_id);
+        if (existingItem) {
+            const newCartItems = cartItems.map(item =>
+                item.product === product_id ? { ...item, quantity: item.quantity + quantity } : item
+            );
+            const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
+            setCartItems(newCartItems);
+            setTotal(newTotal);
+        }
+
         try {
             const res = await authFetch(`${BASEURL}/api/cart/add/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ product_id: product, quantity: quantity })
+                body: JSON.stringify({ product_id: product_id, quantity: quantity })
             })
             if (!res.ok) throw new Error(`Failed to add to cart: ${res.status}`)
             const data = await res.json()
@@ -58,10 +89,21 @@ export const CartProvider = ({ children }) => {
         }
         catch (error) {
             console.error('Error adding to cart:', error)
+            setCartItems(previousCartItems);
+            setTotal(previousTotal);
         }
     }
 
     const removeFromCart = async (itemId) => {
+        const previousCartItems = [...cartItems];
+        const previousTotal = total;
+
+        const newCartItems = cartItems.filter(item => item.id !== itemId);
+        const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
+        
+        setCartItems(newCartItems);
+        setTotal(newTotal);
+
         try {
             const res = await authFetch(`${BASEURL}/api/cart/remove/`, {
                 method: 'POST',
@@ -75,6 +117,8 @@ export const CartProvider = ({ children }) => {
             updateCartState(data)
         } catch (error) {
             console.error('Error removing from cart:', error)
+            setCartItems(previousCartItems);
+            setTotal(previousTotal);
         }
     }
 
@@ -83,6 +127,18 @@ export const CartProvider = ({ children }) => {
             await removeFromCart(itemId)
             return
         }
+
+        const previousCartItems = [...cartItems];
+        const previousTotal = total;
+
+        const newCartItems = cartItems.map(item => 
+            item.id === itemId ? { ...item, quantity } : item
+        );
+        const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
+        
+        setCartItems(newCartItems);
+        setTotal(newTotal);
+
         try {
             const res = await authFetch(`${BASEURL}/api/cart/update/`, {
                 method: 'POST',
@@ -96,12 +152,16 @@ export const CartProvider = ({ children }) => {
             updateCartState(data)
         } catch (error) {
             console.error('Error updating cart quantity:', error)
+            setCartItems(previousCartItems);
+            setTotal(previousTotal);
         }
     }
 
     const clearCart = () => {
         setCartItems([])
         setTotal(0)
+        localStorage.removeItem('cartItems');
+        localStorage.removeItem('cartTotal');
     }
 
     return (

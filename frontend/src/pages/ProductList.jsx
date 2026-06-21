@@ -5,9 +5,15 @@ import '../static/ProductList.css';
 import { ProductListSkeleton } from '../components/SkeletonLoader';
 
 function ProductList() {
-    const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [products, setProducts] = useState(() => {
+        const cached = sessionStorage.getItem('cachedProducts');
+        return cached ? JSON.parse(cached) : [];
+    });
+    const [categories, setCategories] = useState(() => {
+        const cached = sessionStorage.getItem('cachedCategories');
+        return cached ? JSON.parse(cached) : [];
+    });
+    const [loading, setLoading] = useState(!products.length);
     const [error, setError] = useState(null);
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -29,8 +35,11 @@ function ProductList() {
             })
         ])
         .then(([productsData, categoriesData]) => {
-            setProducts(productsData.sort(() => 0.5 - Math.random()));
+            const sortedProducts = productsData.sort(() => 0.5 - Math.random());
+            setProducts(sortedProducts);
             setCategories(categoriesData);
+            sessionStorage.setItem('cachedProducts', JSON.stringify(sortedProducts));
+            sessionStorage.setItem('cachedCategories', JSON.stringify(categoriesData));
             setLoading(false);
         })
         .catch((err) => {
