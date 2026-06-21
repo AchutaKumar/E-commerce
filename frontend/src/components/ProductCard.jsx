@@ -19,7 +19,7 @@ function ProductCard({ product }) {
             navigate('/login');
             return;
         }
-        addToCart(product.id);
+        addToCart(product);
     };
 
     return (

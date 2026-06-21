@@ -70,7 +70,7 @@ function ProductDetail() {
             navigate('/login');
             return;
         }
-        addToCart(product.id, quantity);
+        addToCart(product, quantity);
         setAddedToCart(true);
         setTimeout(() => setAddedToCart(false), 2000);
     };

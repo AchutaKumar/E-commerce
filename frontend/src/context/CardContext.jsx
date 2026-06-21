@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useRef } from "react";
 import { authFetch, getAccessToken, isAuthenticated } from "../utils/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -7,6 +7,7 @@ const CartContext = createContext()
 export const CartProvider = ({ children }) => {
     const navigate = useNavigate();
     const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL
+    const requestCounter = useRef(0);
     const [cartItems, setCartItems] = useState(() => {
         try {
             const saved = localStorage.getItem('cartItems');
@@ -61,7 +62,8 @@ export const CartProvider = ({ children }) => {
         }
     }, [token])
 
-    const addToCart = async (product_id, quantity = 1) => {
+    const addToCart = async (product, quantity = 1) => {
+        const product_id = typeof product === 'object' ? product.id : product;
         const previousCartItems = [...cartItems];
         const previousTotal = total;
 
@@ -73,8 +75,22 @@ export const CartProvider = ({ children }) => {
             const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
             setCartItems(newCartItems);
             setTotal(newTotal);
+        } else if (typeof product === 'object') {
+            const newItem = {
+                id: `temp-${Date.now()}`,
+                product: product.id,
+                quantity: quantity,
+                product_name: product.name,
+                product_price: product.price,
+                product_image: product.image
+            };
+            const newCartItems = [...cartItems, newItem];
+            const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
+            setCartItems(newCartItems);
+            setTotal(newTotal);
         }
 
+        const currentReq = ++requestCounter.current;
         try {
             const res = await authFetch(`${BASEURL}/api/cart/add/`, {
                 method: 'POST',
@@ -85,25 +101,32 @@ export const CartProvider = ({ children }) => {
             })
             if (!res.ok) throw new Error(`Failed to add to cart: ${res.status}`)
             const data = await res.json()
-            updateCartState(data)
+            if (currentReq === requestCounter.current) {
+                updateCartState(data)
+            }
         }
         catch (error) {
             console.error('Error adding to cart:', error)
-            setCartItems(previousCartItems);
-            setTotal(previousTotal);
+            if (currentReq === requestCounter.current) {
+                await fetchCart();
+            }
         }
     }
 
     const removeFromCart = async (itemId) => {
-        const previousCartItems = [...cartItems];
-        const previousTotal = total;
-
         const newCartItems = cartItems.filter(item => item.id !== itemId);
         const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
         
         setCartItems(newCartItems);
         setTotal(newTotal);
 
+        if (typeof itemId === 'string' && itemId.startsWith('temp-')) {
+            // It's a temporary item, just remove it locally and wait for the real add request to finish
+            // Actually, we can't easily cancel the add request. Best to just refresh cart later.
+            return;
+        }
+
+        const currentReq = ++requestCounter.current;
         try {
             const res = await authFetch(`${BASEURL}/api/cart/remove/`, {
                 method: 'POST',
@@ -114,11 +137,14 @@ export const CartProvider = ({ children }) => {
             })
             if (!res.ok) throw new Error(`Failed to remove from cart: ${res.status}`)
             const data = await res.json()
-            updateCartState(data)
+            if (currentReq === requestCounter.current) {
+                updateCartState(data)
+            }
         } catch (error) {
             console.error('Error removing from cart:', error)
-            setCartItems(previousCartItems);
-            setTotal(previousTotal);
+            if (currentReq === requestCounter.current) {
+                await fetchCart();
+            }
         }
     }
 
@@ -128,9 +154,6 @@ export const CartProvider = ({ children }) => {
             return
         }
 
-        const previousCartItems = [...cartItems];
-        const previousTotal = total;
-
         const newCartItems = cartItems.map(item => 
             item.id === itemId ? { ...item, quantity } : item
         );
@@ -139,6 +162,11 @@ export const CartProvider = ({ children }) => {
         setCartItems(newCartItems);
         setTotal(newTotal);
 
+        if (typeof itemId === 'string' && itemId.startsWith('temp-')) {
+            return;
+        }
+
+        const currentReq = ++requestCounter.current;
         try {
             const res = await authFetch(`${BASEURL}/api/cart/update/`, {
                 method: 'POST',
@@ -149,11 +177,14 @@ export const CartProvider = ({ children }) => {
             })
             if (!res.ok) throw new Error(`Failed to update quantity: ${res.status}`)
             const data = await res.json()
-            updateCartState(data)
+            if (currentReq === requestCounter.current) {
+                updateCartState(data)
+            }
         } catch (error) {
             console.error('Error updating cart quantity:', error)
-            setCartItems(previousCartItems);
-            setTotal(previousTotal);
+            if (currentReq === requestCounter.current) {
+                await fetchCart();
+            }
         }
     }
 
