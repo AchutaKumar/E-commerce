@@ -8,12 +8,38 @@ from .models import CartItem, OrderItem, Product, Category, Cart, Order
 from .serializers import CartSerializer, ProductSerializer, CategorySerializer
 from django.views.decorators.cache import cache_page
 
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
+
+class ProductPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
 @api_view(['GET'])
-@cache_page(60 * 15) # Cache for 15 minutes
 def get_products(req):
-    product = Product.objects.select_related('category').all()
-    serializer = ProductSerializer(product, many=True)
-    return Response(serializer.data)
+    query = req.GET.get('q', '')
+    category_id = req.GET.get('category', 'All')
+
+    products = Product.objects.select_related('category').all()
+
+    if query:
+        products = products.filter(
+            Q(name__icontains=query) | Q(description__icontains=query)
+        )
+    
+    if category_id and category_id != 'All':
+        if category_id.isdigit():
+            products = products.filter(category__id=category_id)
+        else:
+            products = products.filter(category__name=category_id)
+            
+    products = products.order_by('-created_at')
+
+    paginator = ProductPagination()
+    paginated_products = paginator.paginate_queryset(products, req)
+    serializer = ProductSerializer(paginated_products, many=True, context={'request': req})
+    return paginator.get_paginated_response(serializer.data)
 
 @api_view(['GET'])
 def get_product(req, pk):

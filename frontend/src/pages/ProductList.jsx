@@ -5,16 +5,16 @@ import '../static/ProductList.css';
 import { ProductListSkeleton } from '../components/SkeletonLoader';
 
 function ProductList() {
-    const [products, setProducts] = useState(() => {
-        const cached = sessionStorage.getItem('cachedProducts');
-        return cached ? JSON.parse(cached) : [];
-    });
+    const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState(() => {
         const cached = sessionStorage.getItem('cachedCategories');
         return cached ? JSON.parse(cached) : [];
     });
-    const [loading, setLoading] = useState(!products.length);
+    const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState(null);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
 
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
@@ -22,51 +22,80 @@ function ProductList() {
 
     const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
 
-    // Fetch Products and Categories in parallel
+    // Fetch categories on mount
     useEffect(() => {
-        Promise.all([
-            fetch(`${BASEURL}/api/products/`).then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch products");
-                return res.json();
-            }),
-            fetch(`${BASEURL}/api/category/`).then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch categories");
-                return res.json();
-            })
-        ])
-        .then(([productsData, categoriesData]) => {
-            const sortedProducts = productsData.sort(() => 0.5 - Math.random());
-            setProducts(sortedProducts);
-            setCategories(categoriesData);
-            sessionStorage.setItem('cachedProducts', JSON.stringify(sortedProducts));
-            sessionStorage.setItem('cachedCategories', JSON.stringify(categoriesData));
-            setLoading(false);
-        })
-        .catch((err) => {
-            setError(err);
-            setLoading(false);
-        });
+        if (categories.length === 0) {
+            fetch(`${BASEURL}/api/category/`)
+                .then(res => res.json())
+                .then(data => {
+                    setCategories(data);
+                    sessionStorage.setItem('cachedCategories', JSON.stringify(data));
+                });
+        }
     }, [BASEURL]);
+
+    // Reset page and products when search/category changes
+    useEffect(() => {
+        setPage(1);
+        setProducts([]);
+        setHasMore(true);
+    }, [query, selectedCategory]);
+
+    // Fetch products based on page, query, and category
+    useEffect(() => {
+        let isMounted = true;
+        
+        const fetchProducts = async () => {
+            if (page === 1 && products.length === 0) setLoading(true);
+            else setLoadingMore(true);
+
+            try {
+                const params = new URLSearchParams({
+                    page: page,
+                    ...(query && { q: query }),
+                    ...(selectedCategory !== 'All' && { category: selectedCategory })
+                });
+
+                const res = await fetch(`${BASEURL}/api/products/?${params.toString()}`);
+                if (!res.ok) throw new Error("Failed to fetch products");
+                
+                const data = await res.json();
+                
+                if (isMounted) {
+                    if (page === 1) {
+                        setProducts(data.results);
+                    } else {
+                        setProducts(prev => {
+                            const newItems = data.results.filter(d => !prev.some(p => p.id === d.id));
+                            return [...prev, ...newItems];
+                        });
+                    }
+                    setHasMore(data.next !== null);
+                    setError(null);
+                }
+            } catch (err) {
+                if (isMounted) setError(err);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                    setLoadingMore(false);
+                }
+            }
+        };
+
+        const timeoutId = setTimeout(fetchProducts, 50);
+        return () => { 
+            isMounted = false; 
+            clearTimeout(timeoutId);
+        };
+    }, [page, query, selectedCategory, BASEURL]);
 
     const handleCategorySelect = (catId) => {
         const params = {};
         if (catId !== 'All') params.category = catId;
+        if (query) params.q = query; // preserve search query
         setSearchParams(params);
     };
-
-    // Filter products locally
-    const filteredProducts = products.filter((product) => {
-        const matchesQuery = product.name.toLowerCase().includes(query.toLowerCase()) ||
-            (product.description && product.description.toLowerCase().includes(query.toLowerCase()));
-
-        const matchesCategory = selectedCategory === 'All' ||
-            (product.category && (
-                product.category.id.toString() === selectedCategory ||
-                product.category.name === selectedCategory
-            ));
-
-        return matchesQuery && matchesCategory;
-    });
 
     if (loading) {
         return (
@@ -142,8 +171,8 @@ function ProductList() {
             </div>
 
             <div className="products-grid">
-                {filteredProducts.length > 0 ? (
-                    filteredProducts.map((product) => (
+                {products.length > 0 ? (
+                    products.map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))
                 ) : (
@@ -153,6 +182,19 @@ function ProductList() {
                     </div>
                 )}
             </div>
+            
+            {hasMore && products.length > 0 && !loading && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', paddingBottom: '30px' }}>
+                    <button 
+                        onClick={() => setPage(p => p + 1)} 
+                        disabled={loadingMore}
+                        className="category-pill active"
+                        style={{ padding: '12px 30px', fontSize: '16px' }}
+                    >
+                        {loadingMore ? 'Loading...' : 'Load More Products'}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
