@@ -7,8 +7,13 @@ import { ProductListSkeleton } from '../components/SkeletonLoader';
 function ProductList() {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState(() => {
-        const cached = sessionStorage.getItem('cachedCategories');
-        return cached ? JSON.parse(cached) : [];
+        try {
+            const cached = sessionStorage.getItem('cachedCategories');
+            const parsed = cached ? JSON.parse(cached) : null;
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
     });
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -24,15 +29,35 @@ function ProductList() {
 
     // Fetch categories on mount
     useEffect(() => {
-        if (categories.length === 0) {
-            fetch(`${BASEURL}/api/category/`)
-                .then(res => res.json())
-                .then(data => {
+        let isMounted = true;
+        
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch(`${BASEURL}/api/category/`);
+                if (!res.ok) throw new Error("Failed to fetch categories");
+                
+                const data = await res.json();
+                
+                if (isMounted && Array.isArray(data)) {
                     setCategories(data);
                     sessionStorage.setItem('cachedCategories', JSON.stringify(data));
-                });
+                }
+            } catch (err) {
+                console.error("Error fetching categories:", err);
+                if (isMounted && categories.length === 0) {
+                    setCategories([]); // Fallback to empty array
+                }
+            }
+        };
+
+        if (categories.length === 0) {
+            fetchCategories();
         }
-    }, [BASEURL]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [BASEURL]); // Intentionally omitting categories.length to avoid unnecessary re-fetches
 
     // Reset page and products when search/category changes
     useEffect(() => {

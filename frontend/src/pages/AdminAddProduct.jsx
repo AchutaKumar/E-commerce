@@ -27,7 +27,9 @@ const AdminAddProduct = () => {
                 const res = await fetch(`${BASEURL}/api/category/`);
                 if (res.ok) {
                     const data = await res.json();
-                    setCategories(data);
+                    if (Array.isArray(data)) {
+                        setCategories(data);
+                    }
                 }
             } catch (err) {
                 console.error("Failed to load categories", err);
@@ -98,65 +100,66 @@ const AdminAddProduct = () => {
     };
 
     return (
-        <div className="pg-wrap admin-page-wrap">
-            <div className="admin-back-bar">
-                <button onClick={() => navigate(-1)} className="admin-back-btn" title="Go back">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
-                        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-                    </svg>
-                    <span>Back</span>
-                </button>
-            </div>
-
-            <div className="pg-card admin-card">
-                <div className="pg-banner admin-banner">
-                    <div className="admin-icon-bubble">📦</div>
+        <div className="admin-dashboard-wrapper">
+            <div className="admin-dashboard-container">
+                <div className="admin-header">
+                    <button onClick={() => navigate(-1)} className="admin-back-btn" title="Go back">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+                            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                        <span>Back</span>
+                    </button>
                 </div>
 
-                <div className="pg-body">
-                    <div className="pg-top">
-                        <div>
-                            <h2 className="pg-name">Add New Product</h2>
-                            <p className="pg-email">Create and publish a product on LoyalKart</p>
-                            <span className="pg-badge"><span className="pg-dot" />Admin Mode</span>
+                <div className="admin-card">
+                    <div className="admin-card-header">
+                        <div className="admin-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="24" height="24">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                        </div>
+                        <div className="admin-title-group">
+                            <h2>Add New Product</h2>
+                            <p>Publish a new item to the storefront inventory</p>
                         </div>
                     </div>
-                    <hr className="pg-divider" />
 
-                    <form onSubmit={handleSubmit} className="admin-form">
-                        <div className="form-group-row">
-                            <div className="form-group">
-                                <label htmlFor="name">Product Name</label>
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    placeholder="e.g. Premium Leather Jacket"
-                                    value={form.name}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="admin-input"
-                                />
+                    <div className="admin-card-body">
+                        <form onSubmit={handleSubmit} className="admin-form">
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <label htmlFor="name">Product Name</label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        placeholder="e.g. Premium Leather Jacket"
+                                        value={form.name}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="admin-input"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="price">Price ($)</label>
+                                    <input
+                                        type="number"
+                                        id="price"
+                                        name="price"
+                                        placeholder="0.00"
+                                        step="0.01"
+                                        min="0.01"
+                                        value={form.price}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="admin-input"
+                                    />
+                                </div>
                             </div>
 
-                            <div className="form-group">
-                                <label htmlFor="price">Price ($)</label>
-                                <input
-                                    type="number"
-                                    id="price"
-                                    name="price"
-                                    placeholder="0.00"
-                                    step="0.01"
-                                    min="0.01"
-                                    value={form.price}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="admin-input"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-group-row">
                             <div className="form-group">
                                 <label htmlFor="category">Category</label>
                                 <select
@@ -175,66 +178,81 @@ const AdminAddProduct = () => {
                                     ))}
                                 </select>
                             </div>
-                        </div>
 
-                        <div className="form-group">
-                            <label htmlFor="description">Description</label>
-                            <textarea
-                                id="description"
-                                name="description"
-                                placeholder="Write detailed description about features, sizing, materials..."
-                                value={form.description}
-                                onChange={handleInputChange}
-                                rows={4}
-                                className="admin-textarea"
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label>Product Image</label>
-                            <div className="image-upload-container">
-                                <input
-                                    type="file"
-                                    id="image"
-                                    accept="image/*"
-                                    onChange={handleImageChange}
-                                    className="image-file-input"
+                            <div className="form-group">
+                                <label htmlFor="description">Description</label>
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    placeholder="Provide detailed features, materials, and sizing..."
+                                    value={form.description}
+                                    onChange={handleInputChange}
+                                    rows={4}
+                                    className="admin-textarea"
                                 />
-                                <label htmlFor="image" className="image-upload-label">
+                            </div>
+
+                            <div className="form-group">
+                                <label>Product Image</label>
+                                <div className="image-upload-wrapper">
+                                    <input
+                                        type="file"
+                                        id="image"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="image-file-input"
+                                        title="Choose a product image"
+                                    />
                                     <div className="upload-prompt">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="28" height="28">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="32" height="32">
                                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                                         </svg>
-                                        <span>Click to upload image file</span>
+                                        <span>Click or drag image file here</span>
                                     </div>
-                                </label>
+                                </div>
                                 {imagePreview && (
-                                    <div className="image-preview-wrapper">
-                                        <img src={imagePreview} alt="Preview" className="image-preview-img" />
+                                    <div className="image-preview-container">
+                                        <img src={imagePreview} alt="Preview" />
                                         <button
                                             type="button"
                                             onClick={() => { setImageFile(null); setImagePreview(null); }}
-                                            className="remove-preview-btn"
+                                            className="remove-image-btn"
+                                            title="Remove image"
                                         >
-                                            ✕
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
                                         </button>
                                     </div>
                                 )}
                             </div>
-                        </div>
 
-                        {msg.text && (
-                            <div className={`admin-msg ${msg.type}`}>
-                                {msg.text}
+                            {msg.text && (
+                                <div className={`admin-msg ${msg.type}`}>
+                                    {msg.type === 'success' ? (
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                    ) : (
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                        </svg>
+                                    )}
+                                    <span>{msg.text}</span>
+                                </div>
+                            )}
+
+                            <div className="admin-actions">
+                                <button type="submit" className="admin-submit-btn" disabled={loading}>
+                                    {loading ? "Publishing Product..." : "Publish Product"}
+                                </button>
                             </div>
-                        )}
-
-                        <div className="admin-actions">
-                            <button type="submit" className="admin-btn pg-btn pg-btn-primary" disabled={loading}>
-                                {loading ? "Creating..." : "Publish Product"}
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

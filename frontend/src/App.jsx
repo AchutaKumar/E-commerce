@@ -10,6 +10,7 @@ import SignupPage from "./pages/SignupPage";
 import PrivateRouter from "./components/PrivateRouter";
 import AdminRouter from "./components/AdminRouter";
 import AdminAddProduct from "./pages/AdminAddProduct";
+import AdminLogin from "./pages/AdminLogin";
 import ScrollToTop from "./components/ScrollToTop";
 import './static/App.css'
 import Profile from "./pages/Profile";
@@ -73,6 +74,7 @@ const App = () => {
 				<Route element={<AdminRouter />}>
 					<Route path="/admin/add-product" element={<AdminAddProduct />} />
 				</Route>
+				<Route path="/admin/login" element={<AdminLogin />} />
 
 				<Route path="*" element={<NotFound />} />
 			</Routes>
