@@ -123,26 +123,6 @@ function ProductList() {
         setSearchParams(params);
     };
 
-    if (loading) {
-        return (
-            <div className="products-container">
-                <div className="products-catalog-header" style={{ marginBottom: '20px' }}>
-                    {query ? (
-                        <h1 className="products-title">Search results for "{query}"</h1>
-                    ) : (
-                        <div className="hero-banner">
-                            <div className="hero-content">
-                                <h1>New Arrivals</h1>
-                                <p>Discover premium quality products curated just for you.</p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                <ProductListSkeleton count={8} />
-            </div>
-        );
-    }
-
     if (error) {
         return (
             <div className="products-container">
@@ -197,7 +177,9 @@ function ProductList() {
             </div>
 
             <div className="products-grid">
-                {products.length > 0 ? (
+                {loading ? (
+                    <ProductListSkeleton count={8} />
+                ) : products.length > 0 ? (
                     products.map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))
