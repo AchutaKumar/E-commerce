@@ -347,4 +347,49 @@
 
 .navbar-btn-primary:hover {
     background: #3C3489;
-} 
+}
+
+/* Mobile Search Styles */
+.search-back-btn {
+    display: none;
+    color: #555;
+}
+
+.mobile-search-toggle {
+    display: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .navbar-search {
+        display: none;
+    }
+    
+    .navbar-search.mobile-open {
+        display: flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        border-radius: 0;
+        border: none;
+        z-index: 101;
+        background: #fff;
+        padding: 0 1rem;
+        box-sizing: border-box;
+    }
+
+    .navbar-search.mobile-open .search-back-btn {
+        display: flex;
+        margin-right: 8px;
+    }
+
+    .mobile-search-toggle {
+        display: flex;
+    }
+}
