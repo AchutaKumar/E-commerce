@@ -64,6 +64,7 @@ function ProductList() {
         setPage(1);
         setProducts([]);
         setHasMore(true);
+        setLoading(true);
     }, [query, selectedCategory]);
 
     // Fetch products based on page, query, and category
