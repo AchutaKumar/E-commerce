@@ -15,11 +15,11 @@ export const ProductCardSkeleton = () => {
 
 export const ProductListSkeleton = ({ count = 8 }) => {
     return (
-        <div className="skeleton-products-grid">
+        <>
             {Array.from({ length: count }).map((_, index) => (
                 <ProductCardSkeleton key={index} />
             ))}
-        </div>
+        </>
     );
 };
 

@@ -50,7 +50,9 @@ const SavedItems = () => {
             </div>
             
             {loading ? (
-                <ProductListSkeleton count={4} />
+                <div className="saved-items-grid">
+                    <ProductListSkeleton count={4} />
+                </div>
             ) : savedProducts.length > 0 ? (
                 <div className="saved-items-grid">
                     {savedProducts.map(product => (
