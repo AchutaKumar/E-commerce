@@ -48,16 +48,26 @@ export const ProductDetailSkeleton = () => {
 
 export const ProfileSkeleton = () => {
     return (
-        <div className="skeleton-profile-wrap">
-            <aside className="skeleton-box skeleton-profile-sidebar"></aside>
-            <main className="skeleton-profile-main">
-                <div className="skeleton-box skeleton-profile-title"></div>
-                <div className="skeleton-profile-stats">
-                    <div className="skeleton-box skeleton-profile-stat-box"></div>
-                    <div className="skeleton-box skeleton-profile-stat-box"></div>
-                    <div className="skeleton-box skeleton-profile-stat-box"></div>
+        <div className="profile-dashboard-wrap">
+            <aside className="profile-sidebar" style={{ border: 'none', padding: 0 }}>
+                <div className="skeleton-box" style={{ width: '100%', height: '100vh', borderRadius: 0 }}></div>
+            </aside>
+            
+            <main className="profile-main-content">
+                <header className="profile-top-bar">
+                    <div className="skeleton-box" style={{ height: '40px', width: '250px', borderRadius: '8px' }}></div>
+                </header>
+
+                <div className="profile-stats-grid">
+                    <div className="skeleton-box" style={{ height: '100px', borderRadius: '16px' }}></div>
+                    <div className="skeleton-box" style={{ height: '100px', borderRadius: '16px' }}></div>
+                    <div className="skeleton-box" style={{ height: '100px', borderRadius: '16px' }}></div>
                 </div>
-                <div className="skeleton-box skeleton-profile-content"></div>
+
+                <div className="profile-content-grid">
+                    <div className="skeleton-box" style={{ height: '350px', borderRadius: '16px' }}></div>
+                    <div className="skeleton-box" style={{ height: '350px', borderRadius: '16px' }}></div>
+                </div>
             </main>
         </div>
     );
