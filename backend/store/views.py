@@ -172,10 +172,13 @@ def get_profile(req):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Refresh with userprofile explicitly for accurate serialization
+        user = User.objects.select_related('userprofile').get(id=user.id)
         serializer = UserProfileSerializer(user)
         return Response(serializer.data)
         
-    serializer = UserProfileSerializer(req.user)
+    user = User.objects.select_related('userprofile').get(id=req.user.id)
+    serializer = UserProfileSerializer(user)
     return Response(serializer.data)
 
 @api_view(['POST'])

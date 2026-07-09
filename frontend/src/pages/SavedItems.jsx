@@ -21,12 +21,15 @@ const SavedItems = () => {
             }
 
             try {
-                const res = await fetch(`${BASEURL}/api/products/`);
-                if (res.ok) {
-                    const allProducts = await res.json();
-                    const filtered = allProducts.filter(p => watchlist.includes(p.id));
-                    setSavedProducts(filtered);
-                }
+                // Fetch each saved product by ID to bypass pagination issues
+                const productPromises = watchlist.map(id => 
+                    fetch(`${BASEURL}/api/products/${id}/`).then(res => {
+                        if (!res.ok) throw new Error(`Failed to fetch product ${id}`);
+                        return res.json();
+                    })
+                );
+                const products = await Promise.all(productPromises);
+                setSavedProducts(products);
             } catch (error) {
                 console.error("Failed to fetch saved items:", error);
             } finally {

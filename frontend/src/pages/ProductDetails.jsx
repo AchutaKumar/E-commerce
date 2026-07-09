@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import useSWR from 'swr';
 import '../static/ProductDetails.css'
 import { useCart } from '../context/CardContext'
 import { isAuthenticated } from '../utils/auth.js';
@@ -7,18 +8,20 @@ import ProductCard from '../components/ProductCard';
 import * as Icon from '../components/Icons.jsx';
 import { ProductDetailSkeleton } from '../components/SkeletonLoader';
 
+const fetcher = async (url) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Server is down, Please try again later");
+    return res.json();
+};
+
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
-    const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    
     const [quantity, setQuantity] = useState(1);
     const [addedToCart, setAddedToCart] = useState(false);
     const [addedToWatchlist, setAddedToWatchlist] = useState(false);
-    const [relatedProducts, setRelatedProducts] = useState([]);
-    const [otherProducts, setOtherProducts] = useState([]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -28,39 +31,25 @@ function ProductDetail() {
         }
     }, [id]);
 
-    useEffect(() => {
-        fetch(`${BASEURL}/api/products/${id}/`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Server is down, Please try again later");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log('Product data:', data);
-                console.log('Image path:', data.image);
-                setProduct(data);
-                setLoading(false);
-                if (data.category) {
-                    fetch(`${BASEURL}/api/products/`)
-                        .then(res => res.json())
-                        .then(allProducts => {
-                            const related = allProducts.filter(
-                                p => p.category?.id === data.category.id && p.id !== data.id
-                            ).sort(() => 0.5 - Math.random()).slice(0, 4);
-                            const others = allProducts.filter(
-                                p => p.category?.id !== data.category.id && p.id !== data.id
-                            ).sort(() => 0.5 - Math.random()).slice(0, 4);
-                            setRelatedProducts(related);
-                            setOtherProducts(others);
-                        });
-                }
-            })
-            .catch((error) => {
-                setError(error.message);
-                setLoading(false);
-            });
-    }, [id, BASEURL]);
+    const { data: product, error, isLoading } = useSWR(`${BASEURL}/api/products/${id}/`, fetcher);
+    
+    const { data: relatedData } = useSWR(
+        product?.category ? `${BASEURL}/api/products/?category=${product.category.id}` : null,
+        fetcher
+    );
+    
+    const { data: allData } = useSWR(
+        product ? `${BASEURL}/api/products/` : null,
+        fetcher
+    );
+
+    const relatedProducts = relatedData?.results
+        ? relatedData.results.filter(p => p.id !== product?.id).slice(0, 4)
+        : [];
+        
+    const otherProducts = allData?.results
+        ? allData.results.filter(p => p.category?.id !== product?.category?.id && p.id !== product?.id).slice(0, 4)
+        : [];
 
     const { addToCart } = useCart();
 
@@ -111,7 +100,7 @@ function ProductDetail() {
         if (quantity > 1) setQuantity(quantity - 1);
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div>
                 <div className='product-detail-container'>
@@ -127,7 +116,7 @@ function ProductDetail() {
         );
     }
 
-    if (error) return <div className="product-detail-error">Error: {error}</div>;
+    if (error) return <div className="product-detail-error">Error: {error.message}</div>;
     if (!product) return <div className="product-detail-error">Product not found</div>;
 
     return (

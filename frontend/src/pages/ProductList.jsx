@@ -1,120 +1,62 @@
-import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import ProductCard from '../components/ProductCard';
 import '../static/ProductList.css';
 import { ProductListSkeleton } from '../components/SkeletonLoader';
 
-function ProductList() {
-    const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState(() => {
-        try {
-            const cached = sessionStorage.getItem('cachedCategories');
-            const parsed = cached ? JSON.parse(cached) : null;
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-            return [];
-        }
-    });
-    const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [error, setError] = useState(null);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+const fetcher = async (url) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch");
+    return res.json();
+};
 
+function ProductList() {
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
     const selectedCategory = searchParams.get('category') || 'All';
 
     const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
 
-    // Fetch categories on mount
-    useEffect(() => {
-        let isMounted = true;
-        
-        const fetchCategories = async () => {
-            try {
-                const res = await fetch(`${BASEURL}/api/category/`);
-                if (!res.ok) throw new Error("Failed to fetch categories");
-                
-                const data = await res.json();
-                
-                if (isMounted && Array.isArray(data)) {
-                    setCategories(data);
-                    sessionStorage.setItem('cachedCategories', JSON.stringify(data));
+    // Fetch categories with SWR
+    const { data: categories = [], error: categoriesError } = useSWR(
+        `${BASEURL}/api/category/`,
+        fetcher,
+        {
+            fallbackData: (() => {
+                try {
+                    const cached = sessionStorage.getItem('cachedCategories');
+                    return cached ? JSON.parse(cached) : [];
+                } catch (e) {
+                    return [];
                 }
-            } catch (err) {
-                console.error("Error fetching categories:", err);
-                if (isMounted && categories.length === 0) {
-                    setCategories([]); // Fallback to empty array
-                }
-            }
-        };
-
-        if (categories.length === 0) {
-            fetchCategories();
+            })(),
+            onSuccess: (data) => sessionStorage.setItem('cachedCategories', JSON.stringify(data)),
         }
+    );
 
-        return () => {
-            isMounted = false;
-        };
-    }, [BASEURL]); // Intentionally omitting categories.length to avoid unnecessary re-fetches
-
-    // Reset page and products when search/category changes
-    useEffect(() => {
-        setPage(1);
-        setProducts([]);
-        setHasMore(true);
-        setLoading(true);
-    }, [query, selectedCategory]);
-
-    // Fetch products based on page, query, and category
-    useEffect(() => {
-        let isMounted = true;
+    // Fetch products with SWR Infinite
+    const getKey = (pageIndex, previousPageData) => {
+        // Reached the end
+        if (previousPageData && !previousPageData.next) return null;
         
-        const fetchProducts = async () => {
-            if (page === 1 && products.length === 0) setLoading(true);
-            else setLoadingMore(true);
+        const params = new URLSearchParams({
+            page: pageIndex + 1,
+            ...(query && { q: query }),
+            ...(selectedCategory !== 'All' && { category: selectedCategory })
+        });
+        
+        return `${BASEURL}/api/products/?${params.toString()}`;
+    };
 
-            try {
-                const params = new URLSearchParams({
-                    page: page,
-                    ...(query && { q: query }),
-                    ...(selectedCategory !== 'All' && { category: selectedCategory })
-                });
+    const { data, error, size, setSize, isValidating } = useSWRInfinite(getKey, fetcher, {
+        revalidateFirstPage: false,
+    });
 
-                const res = await fetch(`${BASEURL}/api/products/?${params.toString()}`);
-                if (!res.ok) throw new Error("Failed to fetch products");
-                
-                const data = await res.json();
-                
-                if (isMounted) {
-                    if (page === 1) {
-                        setProducts(data.results);
-                    } else {
-                        setProducts(prev => {
-                            const newItems = data.results.filter(d => !prev.some(p => p.id === d.id));
-                            return [...prev, ...newItems];
-                        });
-                    }
-                    setHasMore(data.next !== null);
-                    setError(null);
-                }
-            } catch (err) {
-                if (isMounted) setError(err);
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                    setLoadingMore(false);
-                }
-            }
-        };
-
-        const timeoutId = setTimeout(fetchProducts, 50);
-        return () => { 
-            isMounted = false; 
-            clearTimeout(timeoutId);
-        };
-    }, [page, query, selectedCategory, BASEURL]);
+    const products = data ? data.flatMap(page => page?.results || []) : [];
+    const isLoadingInitialData = !data && !error;
+    const isLoadingMore = isLoadingInitialData || (size > 0 && data && typeof data[size - 1] === "undefined");
+    const hasMore = data && data[data.length - 1]?.next != null;
 
     const handleCategorySelect = (catId) => {
         const params = {};
@@ -177,7 +119,7 @@ function ProductList() {
             </div>
 
             <div className="products-grid">
-                {loading ? (
+                {isLoadingInitialData ? (
                     <ProductListSkeleton count={8} />
                 ) : products.length > 0 ? (
                     products.map((product) => (
@@ -191,15 +133,15 @@ function ProductList() {
                 )}
             </div>
             
-            {hasMore && products.length > 0 && !loading && (
+            {hasMore && products.length > 0 && !isLoadingInitialData && (
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', paddingBottom: '30px' }}>
                     <button 
-                        onClick={() => setPage(p => p + 1)} 
-                        disabled={loadingMore}
+                        onClick={() => setSize(size + 1)} 
+                        disabled={isLoadingMore || isValidating}
                         className="category-pill active"
                         style={{ padding: '12px 30px', fontSize: '16px' }}
                     >
-                        {loadingMore ? 'Loading...' : 'Load More Products'}
+                        {isLoadingMore || isValidating ? 'Loading...' : 'Load More Products'}
                     </button>
                 </div>
             )}

@@ -134,7 +134,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR/'static'
 
-ALLOWED_HOSTS = ["e-commerce-7dwo.onrender.com"]
+# Add localhost and 127.0.0.1 for local development
+ALLOWED_HOSTS = ["e-commerce-7dwo.onrender.com", "localhost", "127.0.0.1"]
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',

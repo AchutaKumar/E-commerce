@@ -48,16 +48,16 @@ export const ProductDetailSkeleton = () => {
 
 export const ProfileSkeleton = () => {
     return (
-        <div className="profile-dashboard-wrap" style={{ display: 'flex' }}>
-            <aside className="skeleton-box" style={{ width: '280px', minHeight: '100vh', borderRadius: '0' }}></aside>
-            <main className="profile-main-content" style={{ flex: 1, padding: '40px' }}>
-                <div className="skeleton-box" style={{ height: '40px', width: '30%', marginBottom: '40px' }}></div>
-                <div className="profile-stats-grid" style={{ display: 'flex', gap: '24px', marginBottom: '40px' }}>
-                    <div className="skeleton-box" style={{ height: '100px', flex: 1, borderRadius: '16px' }}></div>
-                    <div className="skeleton-box" style={{ height: '100px', flex: 1, borderRadius: '16px' }}></div>
-                    <div className="skeleton-box" style={{ height: '100px', flex: 1, borderRadius: '16px' }}></div>
+        <div className="skeleton-profile-wrap">
+            <aside className="skeleton-box skeleton-profile-sidebar"></aside>
+            <main className="skeleton-profile-main">
+                <div className="skeleton-box skeleton-profile-title"></div>
+                <div className="skeleton-profile-stats">
+                    <div className="skeleton-box skeleton-profile-stat-box"></div>
+                    <div className="skeleton-box skeleton-profile-stat-box"></div>
+                    <div className="skeleton-box skeleton-profile-stat-box"></div>
                 </div>
-                <div className="skeleton-box" style={{ height: '300px', width: '100%', borderRadius: '16px' }}></div>
+                <div className="skeleton-box skeleton-profile-content"></div>
             </main>
         </div>
     );
