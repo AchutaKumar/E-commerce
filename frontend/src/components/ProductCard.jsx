@@ -1,9 +1,11 @@
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from '../context/CardContext.jsx';
 import { isAuthenticated } from '../utils/auth.js';
 import '../static/ProductCard.css';
 
-function ProductCard({ product }) {
+// Memoizing the ProductCard component to prevent unnecessary re-renders in list views
+const ProductCard = React.memo(function ProductCard({ product }) {
     const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
     const { addToCart } = useCart();
     const navigate = useNavigate();
@@ -29,6 +31,7 @@ function ProductCard({ product }) {
                     src={imageUrl}
                     alt={product.name}
                     className="pc-img"
+                    loading="lazy" // Native lazy loading for performance optimization
                     onError={(e) => {
                         e.target.src = 'https://via.placeholder.com/400x400?text=No+Image';
                     }}
@@ -56,6 +59,6 @@ function ProductCard({ product }) {
             </div>
         </Link>
     );
-}
+});
 
 export default ProductCard;
