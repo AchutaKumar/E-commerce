@@ -1,19 +1,19 @@
 /* ShippingInfo.css */
 
 .info-page-wrap {
-    background-color: #f9fafb;
+    background-color: var(--bg-color);
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-    color: #111827;
+    color: var(--text-dark);
     padding: 60px 24px;
 }
 
 .info-container {
     max-width: 800px;
     margin: 0 auto;
-    background: #ffffff;
+    background: var(--bg-card);
     border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     padding: 60px;
 }
 
@@ -21,7 +21,7 @@
     text-align: center;
     margin-bottom: 40px;
     padding-bottom: 32px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .info-header h1 {
@@ -33,7 +33,7 @@
 
 .info-header p {
     font-size: 16px;
-    color: #6b7280;
+    color: var(--text-light);
 }
 
 .info-section {
@@ -44,7 +44,7 @@
     font-size: 20px;
     font-weight: 700;
     margin-bottom: 16px;
-    color: #1f2937;
+    color: var(--text-dark);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -57,7 +57,7 @@
 .info-section p {
     font-size: 16px;
     line-height: 1.8;
-    color: #4b5563;
+    color: var(--text-light);
     margin-bottom: 16px;
 }
 
@@ -70,7 +70,7 @@
 .info-section li {
     font-size: 16px;
     line-height: 1.8;
-    color: #4b5563;
+    color: var(--text-light);
     margin-bottom: 12px;
     padding-left: 28px;
     position: relative;
@@ -80,7 +80,7 @@
     content: '✓';
     position: absolute;
     left: 0;
-    color: #534AB7;
+    color: var(--primary-color);
     font-weight: bold;
 }
 
@@ -105,7 +105,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #4b5563;
+    color: var(--text-light);
     font-size: 16px;
     font-weight: 500;
     transition: all 0.2s ease;
@@ -114,7 +114,7 @@
 }
 
 .back-btn:hover {
-    color: #111827;
-    background-color: #f3f4f6;
+    color: var(--primary-color);
+    background-color: var(--primary-light);
     transform: translateX(-4px);
 }
