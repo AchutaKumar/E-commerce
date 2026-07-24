@@ -3,7 +3,9 @@ import { useCart } from '../context/CardContext.jsx';
 import { isAuthenticated } from '../utils/auth.js';
 import '../static/ProductCard.css';
 
-function ProductCard({ product }) {
+import { HeartFilledIcon } from './Icons.jsx';
+
+function ProductCard({ product, onRemoveFromWatchlist }) {
     const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
     const { addToCart } = useCart();
     const navigate = useNavigate();
@@ -22,6 +24,14 @@ function ProductCard({ product }) {
         addToCart(product);
     };
 
+    const handleRemoveWatchlist = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onRemoveFromWatchlist) {
+            onRemoveFromWatchlist(product.id);
+        }
+    };
+
     return (
         <Link to={`/products/${product.id}`} className="pc">
             <div className="pc-img-wrap">
@@ -33,6 +43,16 @@ function ProductCard({ product }) {
                         e.target.src = 'https://via.placeholder.com/400x400?text=No+Image';
                     }}
                 />
+                {onRemoveFromWatchlist && (
+                    <button
+                        className="pc-watchlist-remove-btn"
+                        onClick={handleRemoveWatchlist}
+                        aria-label={`Remove ${product.name} from saved items`}
+                        title={`Remove ${product.name} from saved items`}
+                    >
+                        <HeartFilledIcon />
+                    </button>
+                )}
             </div>
             <div className="pc-body">
                 {product.badge && (

@@ -40,6 +40,13 @@ const SavedItems = () => {
         fetchSavedItems();
     }, [BASEURL]);
 
+    const handleRemoveFromWatchlist = (productId) => {
+        let watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');
+        watchlist = watchlist.filter(id => id !== productId);
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        setSavedProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
+    };
+
     return (
         <div className="saved-items-container">
             <div className="saved-items-header">
@@ -56,7 +63,11 @@ const SavedItems = () => {
             ) : savedProducts.length > 0 ? (
                 <div className="saved-items-grid">
                     {savedProducts.map(product => (
-                        <ProductCard key={product.id} product={product} />
+                        <ProductCard
+                            key={product.id}
+                            product={product}
+                            onRemoveFromWatchlist={handleRemoveFromWatchlist}
+                        />
                     ))}
                 </div>
             ) : (
