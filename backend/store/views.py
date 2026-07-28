@@ -44,6 +44,8 @@ def get_product_list_cache_key(page, query, category_id):
     return f"pl_v{version}:page={page}:q={query or ''}:cat={category_id or 'All'}"
 
 
+from rest_framework.exceptions import NotFound
+
 class ProductPagination(PageNumberPagination):
     page_size = 12
     page_size_query_param = "page_size"
@@ -55,6 +57,10 @@ def get_products(req):
     query = req.GET.get("q", "")
     category_id = req.GET.get("category", "All")
     page = req.GET.get("page", 1)
+
+    # Auto-seed landing page data & products if empty
+    if Product.objects.count() == 0:
+        get_landing_data(req)
 
     # Try cache first
     cache_key = get_product_list_cache_key(page, query, category_id)
@@ -78,7 +84,12 @@ def get_products(req):
     products = products.order_by("-created_at")
 
     paginator = ProductPagination()
-    paginated_products = paginator.paginate_queryset(products, req)
+    try:
+        paginated_products = paginator.paginate_queryset(products, req)
+    except NotFound:
+        empty_data = {"count": products.count(), "next": None, "previous": None, "results": []}
+        return Response(empty_data)
+
     serializer = ProductSerializer(
         paginated_products, many=True, context={"request": req}
     )
@@ -87,6 +98,7 @@ def get_products(req):
     # Cache the response data for 5 minutes
     cache.set(cache_key, response.data, 60 * 5)
     return response
+
 
 
 @api_view(["GET"])

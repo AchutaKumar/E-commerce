@@ -134,8 +134,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR/'static'
 
-# Add localhost and 127.0.0.1 for local development
-ALLOWED_HOSTS = ["e-commerce-7dwo.onrender.com", "localhost", "127.0.0.1"]
+# Production & Local Allowed Hosts (Render dynamic host support)
+ALLOWED_HOSTS = ["*"]
 
 # ── Caching ──────────────────────────────────────────────
 # Database-backed cache (simple, no external service required)
@@ -159,13 +159,10 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1 week
 SESSION_COOKIE_NAME = 'loyalkart_session'
 SESSION_SAVE_EVERY_REQUEST = True
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174',
-    'https://e-commerce-1-ussz.onrender.com',
-]
+# ── CORS Settings (Render & Local support) ─────────────
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

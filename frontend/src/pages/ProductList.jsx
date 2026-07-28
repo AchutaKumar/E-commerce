@@ -6,9 +6,17 @@ import '../static/ProductList.css';
 import { ProductListSkeleton } from '../components/SkeletonLoader';
 
 const fetcher = async (url) => {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch");
-    return res.json();
+    try {
+        const res = await fetch(url);
+        if (res.status === 404) {
+            return { count: 0, next: null, previous: null, results: [] };
+        }
+        if (!res.ok) throw new Error("Failed to fetch");
+        return await res.json();
+    } catch (err) {
+        if (err.message === "Failed to fetch") throw err;
+        return { count: 0, next: null, previous: null, results: [] };
+    }
 };
 
 function ProductList() {
@@ -16,10 +24,10 @@ function ProductList() {
     const query = searchParams.get('q') || '';
     const selectedCategory = searchParams.get('category') || 'All';
 
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
+    const BASEURL = (import.meta.env.VITE_DJANGO_BASE_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
 
     // Fetch categories with SWR
-    const { data: categories = [], error: categoriesError } = useSWR(
+    const { data: categories = [] } = useSWR(
         `${BASEURL}/api/category/`,
         fetcher,
         {
@@ -31,7 +39,11 @@ function ProductList() {
                     return [];
                 }
             })(),
-            onSuccess: (data) => sessionStorage.setItem('cachedCategories', JSON.stringify(data)),
+            onSuccess: (data) => {
+                if (Array.isArray(data)) {
+                    sessionStorage.setItem('cachedCategories', JSON.stringify(data));
+                }
+            },
         }
     );
 
@@ -48,6 +60,7 @@ function ProductList() {
         
         return `${BASEURL}/api/products/?${params.toString()}`;
     };
+
 
     const { data, error, size, setSize, isValidating } = useSWRInfinite(getKey, fetcher, {
         revalidateFirstPage: false,
