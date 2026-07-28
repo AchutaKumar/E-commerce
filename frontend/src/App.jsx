@@ -51,7 +51,6 @@ const App = () => {
           });
           if (res.status === 401 || res.status === 403) {
             clearToken();
-            window.location.reload();
           }
         } catch (_error) {
           // Network errors or backend unreachable, ignore

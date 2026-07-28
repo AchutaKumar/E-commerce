@@ -1,0 +1,13 @@
+# Render Blueprint Configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: ecommerce-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
