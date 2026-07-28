@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
 import { ROUTES } from "./utils/routes.js";
 import { getAccessToken, clearToken } from "./utils/auth";
@@ -9,6 +9,15 @@ import PrivateRouter from "./components/PrivateRouter";
 import AdminRouter from "./components/AdminRouter";
 import { CartProvider } from "./context/CardContext.jsx";
 import "./static/App.css";
+
+// Helper component to normalize trailing slashes on reload (e.g. /shop/ -> /shop)
+const TrailingSlashRedirect = () => {
+  const location = useLocation();
+  if (location.pathname !== '/' && location.pathname.endsWith('/')) {
+    return <Navigate to={{ ...location, pathname: location.pathname.replace(/\/+$/, '') }} replace />;
+  }
+  return null;
+};
 
 // --- Lazy-loaded pages (code-split at route level) ---
 const LandingPage = lazy(() => import("./pages/LandingPage"));
@@ -62,6 +71,7 @@ const App = () => {
 
   return (
     <Router>
+      <TrailingSlashRedirect />
       <ScrollToTop />
       <CartProvider>
         <NavBar />

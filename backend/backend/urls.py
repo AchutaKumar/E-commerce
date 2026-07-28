@@ -7,15 +7,16 @@ from django.views.static import serve
 from django.http import HttpResponse, JsonResponse
 
 def spa_fallback(request, path=''):
-    # If path starts with api/ or admin/, return a clean JSON 404 instead of Django's technical 404
-    if path.startswith('api/') or path.startswith('admin/'):
-        return JsonResponse({'error': 'Endpoint not found'}, status=404)
-    
     # Check if frontend/dist/index.html exists for static serving
     frontend_dist_index = os.path.join(settings.BASE_DIR.parent, 'frontend', 'dist', 'index.html')
     if os.path.exists(frontend_dist_index):
-        with open(frontend_dist_index, 'r', encoding='utf-8') as f:
-            return HttpResponse(f.read(), content_type='text/html')
+        if not path.startswith('api/'):
+            with open(frontend_dist_index, 'r', encoding='utf-8') as f:
+                return HttpResponse(f.read(), content_type='text/html')
+    
+    # If path starts with api/, return a clean JSON 404
+    if path.startswith('api/'):
+        return JsonResponse({'error': 'Endpoint not found'}, status=404)
     
     # Fallback message for direct Django server requests
     return HttpResponse(

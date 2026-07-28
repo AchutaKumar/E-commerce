@@ -469,12 +469,14 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 24px;
   text-align: center;
+  color: white;
 }
 
 .lp-stat-card {
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: white;
 }
 
 .lp-stat-icon {
@@ -486,16 +488,13 @@
   font-size: 32px;
   font-weight: 800;
   margin: 0 0 4px 0;
-  color: #ffffff;
 }
 
 .lp-stat-card p {
   font-size: 14px;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
-  opacity: 1;
 }
-
 
 /* 7. Customer Testimonials */
 .lp-testimonial-bg {

@@ -57,6 +57,10 @@ const NavBar = () => {
         }
     };
 
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
+
     return (
         <header className="top-navbar">
             <div className="nav-container">
@@ -75,7 +79,7 @@ const NavBar = () => {
                         {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
                     </button>
 
-                    <Link className="brand-logo" to={ROUTES.HOME}>
+                    <Link className="brand-logo" to={ROUTES.HOME} onClick={closeMobileMenu}>
                         LoyalKart
                     </Link>
                     <nav className="nav-links">
@@ -84,6 +88,9 @@ const NavBar = () => {
                         </Link>
                         <Link className={`nav-link ${location.pathname === ROUTES.SHOP ? 'active-link' : ''}`} to={ROUTES.SHOP}>
                             Shop
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === ROUTES.SAVED_ITEMS ? 'active-link' : ''}`} to={ROUTES.SAVED_ITEMS}>
+                            Saved Items
                         </Link>
                         <Link className={`nav-link ${location.pathname === ROUTES.ABOUT ? 'active-link' : ''}`} to={ROUTES.ABOUT}>
                             About
@@ -105,7 +112,7 @@ const NavBar = () => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="nav-search-input"
                     />
-                    {searchQuery && (
+                    {searchQuery ? (
                         <button
                             type="button"
                             className="nav-search-clear"
@@ -114,11 +121,11 @@ const NavBar = () => {
                                 searchInputRef.current?.focus();
                             }}
                             aria-label="Clear Search"
+                            title="Clear Search"
                         >
                             <X size={16} />
                         </button>
-                    )}
-                    {isMobileSearchOpen && (
+                    ) : isMobileSearchOpen ? (
                         <button
                             type="button"
                             className="nav-search-close-mobile"
@@ -128,7 +135,7 @@ const NavBar = () => {
                         >
                             <X size={20} />
                         </button>
-                    )}
+                    ) : null}
                 </form>
 
                 <div className="nav-right">
@@ -146,7 +153,7 @@ const NavBar = () => {
                     </button>
 
                     {/* Cart Button */}
-                    <Link to={ROUTES.CART} className="icon-button cart-icon-wrapper" aria-label={`Cart, ${cartCount} items`}>
+                    <Link to={ROUTES.CART} className="icon-button cart-icon-wrapper" aria-label={`Cart, ${cartCount} items`} onClick={closeMobileMenu}>
                         <ShoppingBag size={22} />
                         {cartCount > 0 && (
                             <span className="cart-badge">{cartCount}</span>
@@ -182,51 +189,57 @@ const NavBar = () => {
                 </div>
             </div>
 
-            {/* Mobile Navigation Drawer */}
+            {/* Mobile Navigation Drawer & Backdrop */}
             {isMobileMenuOpen && (
-                <div className="mobile-nav-drawer">
-                    <nav className="mobile-nav-links">
-                        <Link className={`mobile-nav-item ${location.pathname === ROUTES.HOME ? 'active' : ''}`} to={ROUTES.HOME}>
-                            Home
-                        </Link>
-                        <Link className={`mobile-nav-item ${location.pathname === ROUTES.SHOP ? 'active' : ''}`} to={ROUTES.SHOP}>
-                            Shop
-                        </Link>
-                        <Link className={`mobile-nav-item ${location.pathname === ROUTES.ABOUT ? 'active' : ''}`} to={ROUTES.ABOUT}>
-                            About
-                        </Link>
-                        <Link className={`mobile-nav-item ${location.pathname === ROUTES.SHIPPING_INFO ? 'active' : ''}`} to={ROUTES.SHIPPING_INFO}>
-                            Shipping Info
-                        </Link>
+                <>
+                    <div className="mobile-nav-backdrop" onClick={closeMobileMenu} aria-hidden="true" />
+                    <div className="mobile-nav-drawer">
+                        <nav className="mobile-nav-links">
+                            <Link className={`mobile-nav-item ${location.pathname === ROUTES.HOME ? 'active' : ''}`} to={ROUTES.HOME} onClick={closeMobileMenu}>
+                                Home
+                            </Link>
+                            <Link className={`mobile-nav-item ${location.pathname === ROUTES.SHOP ? 'active' : ''}`} to={ROUTES.SHOP} onClick={closeMobileMenu}>
+                                Shop
+                            </Link>
+                            <Link className={`mobile-nav-item ${location.pathname === ROUTES.SAVED_ITEMS ? 'active' : ''}`} to={ROUTES.SAVED_ITEMS} onClick={closeMobileMenu}>
+                                Saved Items
+                            </Link>
+                            <Link className={`mobile-nav-item ${location.pathname === ROUTES.ABOUT ? 'active' : ''}`} to={ROUTES.ABOUT} onClick={closeMobileMenu}>
+                                About
+                            </Link>
+                            <Link className={`mobile-nav-item ${location.pathname === ROUTES.SHIPPING_INFO ? 'active' : ''}`} to={ROUTES.SHIPPING_INFO} onClick={closeMobileMenu}>
+                                Shipping Info
+                            </Link>
 
-                        <hr className="mobile-nav-divider" />
+                            <hr className="mobile-nav-divider" />
 
-                        {isLoggedIn ? (
-                            <>
-                                <Link className="mobile-nav-item" to={ROUTES.PROFILE}>
-                                    User Profile
-                                </Link>
-                                {isAdmin && (
-                                    <Link className="mobile-nav-item admin" to={ROUTES.ADMIN_ADD_PRODUCT}>
-                                        Admin Panel
+                            {isLoggedIn ? (
+                                <>
+                                    <Link className={`mobile-nav-item ${location.pathname === ROUTES.PROFILE ? 'active' : ''}`} to={ROUTES.PROFILE} onClick={closeMobileMenu}>
+                                        User Profile
                                     </Link>
-                                )}
-                                <button onClick={handleLogout} className="mobile-nav-logout-btn">
-                                    Logout
-                                </button>
-                            </>
-                        ) : (
-                            <div className="mobile-nav-auth">
-                                <Link className="mobile-nav-btn sign-in" to={ROUTES.LOGIN}>
-                                    Sign In
-                                </Link>
-                                <Link className="mobile-nav-btn register" to={ROUTES.REGISTER}>
-                                    Register
-                                </Link>
-                            </div>
-                        )}
-                    </nav>
-                </div>
+                                    {isAdmin && (
+                                        <Link className="mobile-nav-item admin" to={ROUTES.ADMIN_ADD_PRODUCT} onClick={closeMobileMenu}>
+                                            Admin Panel
+                                        </Link>
+                                    )}
+                                    <button onClick={handleLogout} className="mobile-nav-logout-btn">
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="mobile-nav-auth">
+                                    <Link className="mobile-nav-btn sign-in" to={ROUTES.LOGIN} onClick={closeMobileMenu}>
+                                        Sign In
+                                    </Link>
+                                    <Link className="mobile-nav-btn register" to={ROUTES.REGISTER} onClick={closeMobileMenu}>
+                                        Register
+                                    </Link>
+                                </div>
+                            )}
+                        </nav>
+                    </div>
+                </>
             )}
         </header>
     );
