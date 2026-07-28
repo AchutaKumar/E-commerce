@@ -137,6 +137,28 @@ STATIC_ROOT = BASE_DIR/'static'
 # Add localhost and 127.0.0.1 for local development
 ALLOWED_HOSTS = ["e-commerce-7dwo.onrender.com", "localhost", "127.0.0.1"]
 
+# ── Caching ──────────────────────────────────────────────
+# Database-backed cache (simple, no external service required)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache_table',
+        'TIMEOUT': 60 * 15,  # 15 minutes default
+    },
+    'products': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache_products',
+        'TIMEOUT': 60 * 5,  # 5 minutes for product data
+    },
+}
+
+# ── Sessions ────────────────────────────────────────────
+# Store sessions in database (simple, no external service)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1 week
+SESSION_COOKIE_NAME = 'loyalkart_session'
+SESSION_SAVE_EVERY_REQUEST = True
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:5173',

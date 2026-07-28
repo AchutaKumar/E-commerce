@@ -1,5 +1,6 @@
 import { useCart } from "../context/CardContext.jsx";
 import { Link, useNavigate } from "react-router-dom";
+import { ROUTES } from '../utils/routes.js';
 import '../static/CartPage.css';
 
 function CartPage() {
@@ -12,7 +13,7 @@ function CartPage() {
     return (
         <div className="cart-page-wrapper">
             <div className="cart-top-bar">
-                <button onClick={() => navigate('/')} className="cart-page-back" title="Go back">
+                <button onClick={() => navigate(ROUTES.HOME)} className="cart-page-back" title="Go back">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
                         <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
                     </svg>
@@ -30,7 +31,7 @@ function CartPage() {
                     <div className="cart-empty-icon">🛒</div>
                     <h2>Your Bag is Empty</h2>
                     <p>It looks like you haven't added any items to your bag yet.</p>
-                    <Link to="/" className="cart-empty-cta">Browse Products</Link>
+                    <Link to={ROUTES.HOME} className="cart-empty-cta">Browse Products</Link>
                 </div>
             ) : (
                 <div className="cart-grid">
@@ -124,7 +125,7 @@ function CartPage() {
                                 <span>${total.toFixed(2)}</span>
                             </div>
 
-                            <Link to="/checkout" className="cart-checkout-cta-btn">
+                            <Link to={ROUTES.CHECKOUT} className="cart-checkout-cta-btn">
                                 Proceed to Checkout
                             </Link>
 

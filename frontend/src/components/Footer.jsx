@@ -1,106 +1,167 @@
-import { Link } from 'react-router-dom';
-import * as Icon from './Icons.jsx';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ROUTES } from "../utils/routes";
+import { Mail, Phone, MapPin, Heart } from "lucide-react";
+import "../static/Footer.css";
 
-export default function Footer() {
-  const handleSubscribe = (e) => {
+const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribeError, setSubscribeError] = useState("");
+
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    const email = e.target.email.value;
-    if (email) {
-      alert(`Thanks for subscribing with: ${email}`);
-      e.target.reset();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSubscribeError("Please enter a valid email address");
+      return;
+    }
+    setSubscribing(true);
+    setSubscribeError("");
+    const BASE_URL = import.meta.env.VITE_DJANGO_BASE_URL;
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/newsletter/subscribe/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (res.ok) {
+        setSubscribed(true);
+        setEmail("");
+      } else {
+        const data = await res.json();
+        setSubscribeError(data.error || "Subscription failed. Try again.");
+      }
+    } catch {
+      setSubscribeError("Network error. Please try again later.");
+    } finally {
+      setSubscribing(false);
     }
   };
 
   return (
-    <footer className="footer">
-      <div className="footer-top">
-        <div className="footer-brand">
-          <h2>LoyalKart</h2>
-          <p>
-            Your trusted online store for quality products, rewards, and a seamless shopping experience.
-          </p>
-        </div>
-
-        <div className="footer-newsletter">
-          <h3>Join our loyalty club</h3>
-          <p>Get exclusive deals, early access, and reward points.</p>
-          <form onSubmit={handleSubscribe} className="newsletter-form">
-            <input
-              type="email"
-              name="email"
-              required
-              placeholder="Enter your email"
-            />
-            <button type="submit">Subscribe</button>
-          </form>
-        </div>
-      </div>
-
-      <div className="footer-divider" />
-
-      <div className="footer-links-grid">
-        <div className="footer-column">
-          <h4>Shop</h4>
-          <ul>
-            <li><Link to="/">New Arrivals</Link></li>
-            <li><Link to="/">Best Sellers</Link></li>
-            <li><Link to="/">Electronics</Link></li>
-            <li><Link to="/">Fashion</Link></li>
-          </ul>
-        </div>
-
-        <div className="footer-column">
-          <h4>Customer Care</h4>
-          <ul>
-            <li><Link to="/">Track Order</Link></li>
-            <li><Link to="/">Returns</Link></li>
-            <li><Link to="/shipping-info">Shipping Info</Link></li>
-            <li><Link to="/">FAQs</Link></li>
-          </ul>
-        </div>
-
-        <div className="footer-column">
-          <h4>Company</h4>
-          <ul>
-            <li><Link to="/about">About LoyalKart</Link></li>
-            <li><Link to="/">Privacy Policy</Link></li>
-            <li><Link to="/">Terms of Service</Link></li>
-          </ul>
-        </div>
-
-        <div className="footer-column contact-column">
-          <h4>Contact Info</h4>
-          <ul style={{ color: '#8e8e93', fontSize: '14px', lineHeight: '1.8' }}>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Icon.MapPinIcon /> 123 Commerce St, Tech City</li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Icon.PhoneIcon /> +1 (800) 123-4567</li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Icon.MailIcon /> support@loyalkart.com</li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Icon.ClockIcon /> Mon - Fri, 9am - 6pm</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="footer-bottom">
-        <div className="footer-bottom-inner">
-          <p>© {new Date().getFullYear()} LoyalKart. All rights reserved.</p>
-
-          <div className="footer-socials">
-            {['Facebook', 'Twitter', 'Instagram'].map((social) => (
-              <a key={social} href="#" aria-label={social}>
-                {social[0]}
-              </a>
-            ))}
+    <footer className="site-footer">
+      <div className="footer-inner">
+        {/* ── Top row: Brand + Newsletter ── */}
+        <div className="footer-top">
+          <div className="footer-brand-col">
+            <Link to={ROUTES.HOME} className="footer-brand-logo">
+              LoyalKart
+            </Link>
+            <p className="footer-tagline">
+              Premium products curated for those who appreciate quality,
+              delivered with care.
+            </p>
+            <div className="footer-contact">
+              <span className="contact-item">
+                <Mail size={14} />
+                support@loyalkart.com
+              </span>
+              <span className="contact-item">
+                <Phone size={14} />
+                +1 (800) 555-LOYAL
+              </span>
+              <span className="contact-item">
+                <MapPin size={14} />
+                123 Commerce St, New York, NY
+              </span>
+            </div>
           </div>
 
-          <div className="payment-methods">
-            <span>We accept:</span>
-            {['VISA', 'MC', 'PayPal'].map((method) => (
-              <span key={method} className="payment-badge">
-                {method}
-              </span>
-            ))}
+          <div className="footer-newsletter-col">
+            <h4 className="newsletter-heading">Stay in the Loop</h4>
+            <p className="newsletter-sub">
+              Get early access to new arrivals, exclusive deals, and member-only
+              events.
+            </p>
+            {subscribed ? (
+              <div className="subscribe-success">
+                <Heart size={18} />
+                <span>You&apos;re on the list! Welcome to the LoyalKart family.</span>
+              </div>
+            ) : (
+              <form className="newsletter-form-row" onSubmit={handleSubscribe}>
+                <div className="newsletter-input-wrap">
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (subscribeError) setSubscribeError("");
+                    }}
+                    className="newsletter-field"
+                  />
+                  {subscribeError && (
+                    <span className="newsletter-error">{subscribeError}</span>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  disabled={subscribing}
+                  className="newsletter-cta"
+                >
+                  {subscribing ? "Sending…" : "Subscribe"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+
+        {/* ── Middle row: Link columns ── */}
+        <div className="footer-links-row">
+          <div className="link-column">
+            <h5 className="link-column-title">Shop</h5>
+            <Link to={ROUTES.HOME} className="footer-link-item">
+              All Products
+            </Link>
+          </div>
+
+          <div className="link-column">
+            <h5 className="link-column-title">Support</h5>
+            <Link to={ROUTES.SHIPPING_INFO} className="footer-link-item">
+              Shipping Info
+            </Link>
+            <Link to={ROUTES.CART} className="footer-link-item">
+              Your Cart
+            </Link>
+            <Link to={ROUTES.PROFILE} className="footer-link-item">
+              My Account
+            </Link>
+          </div>
+
+          <div className="link-column">
+            <h5 className="link-column-title">Company</h5>
+            <Link to={ROUTES.ABOUT} className="footer-link-item">
+              About Us
+            </Link>
+          </div>
+
+          <div className="link-column">
+            <h5 className="link-column-title">Legal</h5>
+            <Link to={ROUTES.HOME} className="footer-link-item">
+              Privacy Policy
+            </Link>
+            <Link to={ROUTES.HOME} className="footer-link-item">
+              Terms of Service
+            </Link>
+          </div>
+        </div>
+
+        {/* ── Bottom bar ── */}
+        <div className="footer-bottom-bar">
+          <span className="footer-copy">
+            &copy; {new Date().getFullYear()} LoyalKart. All rights reserved.
+          </span>
+          <div className="footer-badge">
+            <Heart size={14} />
+            <span>Made with care</span>
           </div>
         </div>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

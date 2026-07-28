@@ -1,6 +1,16 @@
 from rest_framework import serializers
-from .models import CartItem, Product, Category,Cart
+from .models import CartItem, Product, Category, Cart, UserProfile, HeroSlide, Testimonial, FlashDeal
 from django.contrib.auth.models import User
+
+class HeroSlideSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HeroSlide
+        fields = '__all__'
+
+class TestimonialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Testimonial
+        fields = '__all__'
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,6 +29,13 @@ class ProductSerializer(serializers.ModelSerializer):
         if obj.image:
             return obj.image.url if hasattr(obj.image, 'url') else str(obj.image)
         return None
+
+class FlashDealSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    class Meta:
+        model = FlashDeal
+        fields = '__all__'
+
 
 class CartItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source = 'product.name', read_only = True)
@@ -53,21 +70,21 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data.get('password') != data.get('password2'):
             raise serializers.ValidationError({"password": "Passwords do not match."})
-            
-        email = data.get('email')
+
+        email = data.get('email', '')
         if email and User.objects.filter(email=email).exists():
             raise serializers.ValidationError({"email": "Email is already registered."})
-            
+
         return data
     
     def create(self, validated_data):
         phone_number = validated_data.pop('phone_number', '')
+        validated_data.pop('password2', None)
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email', ''),
             password=validated_data['password']
         )
-        from .models import UserProfile
         UserProfile.objects.create(user=user, phone_number=phone_number)
         return user
 

@@ -16,7 +16,7 @@
 .notfound-title {
     font-size: 140px;
     font-weight: 800;
-    color: #534AB7;
+    color: var(--primary-color);
     margin: 0;
     line-height: 1;
     text-shadow: 4px 4px 0px #e0e0e8;
@@ -38,7 +38,7 @@
 
 .notfound-home-btn {
     display: inline-block;
-    background-color: #534AB7;
+    background-color: var(--primary-color);
     color: #ffffff;
     font-size: 16px;
     font-weight: 600;
@@ -46,13 +46,13 @@
     border-radius: 30px;
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(83, 74, 183, 0.2);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
 }
 
 .notfound-home-btn:hover {
-    background-color: #3C3489;
+    background-color: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(83, 74, 183, 0.3);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
 }
 
 .notfound-home-btn:active {

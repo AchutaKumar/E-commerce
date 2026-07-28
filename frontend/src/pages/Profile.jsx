@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { clearToken, getAccessToken } from '../utils/auth.js';
+import { ROUTES } from '../utils/routes.js';
 import { useCart } from '../context/CardContext.jsx';
 import '../static/Profile.css';
 import { useState, useEffect } from "react";
@@ -21,7 +22,7 @@ const Profile = () => {
     const handleLogout = () => {
         clearToken();
         clearCart();
-        navigate('/login');
+        navigate(ROUTES.LOGIN);
     };
 
     useEffect(() => {
@@ -117,7 +118,7 @@ const Profile = () => {
                     <button className="nav-btn" onClick={() => alert("Orders coming soon!")}>
                         <span className="nav-icon"><Icon.PackageIcon /></span> My Orders
                     </button>
-                    <button className="nav-btn" onClick={() => navigate('/saved-items')}>
+                    <button className="nav-btn" onClick={() => navigate(ROUTES.SAVED_ITEMS)}>
                         <span className="nav-icon"><Icon.HeartIcon /></span> Watchlist ({watchlistCount})
                     </button>
                     <button className="nav-btn" onClick={() => alert("Settings coming soon!")}>

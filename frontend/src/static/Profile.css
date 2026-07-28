@@ -22,7 +22,7 @@
     width: 40px;
     height: 40px;
     border: 3px solid #e5e7eb;
-    border-top-color: #534AB7;
+    border-top-color: var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 16px;
@@ -59,7 +59,7 @@
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #534AB7, #3C3489);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -67,7 +67,7 @@
     font-size: 28px;
     font-weight: 700;
     margin-bottom: 16px;
-    box-shadow: 0 4px 12px rgba(83, 74, 183, 0.2);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
 }
 
 .profile-name {
@@ -123,7 +123,7 @@
 
 .nav-btn.active {
     background: #eef2ff;
-    color: #534AB7;
+    color: var(--primary-color);
     font-weight: 600;
 }
 
@@ -270,7 +270,7 @@
 .edit-btn {
     background: transparent;
     border: none;
-    color: #534AB7;
+    color: var(--primary-color);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -323,9 +323,9 @@
 }
 
 .profile-edit-input:focus {
-    border-color: #534AB7;
+    border-color: var(--primary-color);
     background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.1);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 /* Quick Actions Modern Grid */

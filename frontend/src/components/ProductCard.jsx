@@ -10,12 +10,18 @@ const ProductCard = React.memo(function ProductCard({ product }) {
     const { addToCart } = useCart();
     const navigate = useNavigate();
 
-    const imageUrl = product.image
-        ? `${BASEURL}${product.image}`
-        : 'https://via.placeholder.com/400x400?text=No+Image';
+    let imageUrl = 'https://via.placeholder.com/400x400?text=No+Image';
+    if (product.image) {
+        if (typeof product.image === 'string' && (product.image.startsWith('http://') || product.image.startsWith('https://'))) {
+            imageUrl = product.image;
+        } else {
+            imageUrl = `${BASEURL}${product.image}`;
+        }
+    }
 
     const handleAddToCart = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         if (!isAuthenticated()) {
             alert("Please log in to add items to your cart.");
             navigate('/login');
@@ -23,6 +29,7 @@ const ProductCard = React.memo(function ProductCard({ product }) {
         }
         addToCart(product);
     };
+
 
     return (
         <Link to={`/products/${product.id}`} className="pc">

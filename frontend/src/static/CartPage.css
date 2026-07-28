@@ -21,14 +21,14 @@
     gap: 8px;
     font-size: 13px;
     font-weight: 500;
-    color: #534AB7;
+    color: var(--primary-color);
     cursor: pointer;
     padding: 0;
     transition: all 0.2s ease;
 }
 
 .cart-page-back:hover {
-    color: #3c3489;
+    color: var(--primary-dark);
     text-decoration: underline;
     transform: translateX(-2px);
 }
@@ -98,20 +98,20 @@
     align-items: center;
     justify-content: center;
     padding: 10px 24px;
-    background: #534AB7;
+    background: var(--primary-color);
     color: #ffffff;
     text-decoration: none;
     border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(83, 74, 183, 0.15);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
 }
 
 .cart-empty-cta:hover {
-    background: #3c3489;
+    background: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(83, 74, 183, 0.25);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
 }
 
 /* Split e-commerce layout */
@@ -193,7 +193,7 @@
 }
 
 .cart-item-name-link:hover {
-    color: #534AB7;
+    color: var(--primary-color);
 }
 
 .cart-item-unit-price {
@@ -233,7 +233,7 @@
 }
 
 .qty-change-btn:hover {
-    background: #534AB7;
+    background: var(--primary-color);
     color: #ffffff;
 }
 
@@ -360,7 +360,7 @@
 
 .summary-total-row span:last-child {
     font-size: 20px;
-    color: #534AB7;
+    color: var(--primary-color);
 }
 
 .cart-checkout-cta-btn {
@@ -369,21 +369,21 @@
     justify-content: center;
     width: 100%;
     padding: 12px 0;
-    background: #534AB7;
+    background: var(--primary-color);
     color: #ffffff;
     text-decoration: none;
     border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
     margin-top: 24px;
-    box-shadow: 0 4px 12px rgba(83, 74, 183, 0.15);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cart-checkout-cta-btn:hover {
-    background: #3c3489;
+    background: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(83, 74, 183, 0.25);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
 }
 
 .cart-checkout-cta-btn:active {

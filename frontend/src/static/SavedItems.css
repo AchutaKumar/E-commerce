@@ -51,7 +51,7 @@
 }
 
 .continue-shopping-btn {
-    background: #534AB7;
+    background: var(--primary-color);
     color: white;
     padding: 12px 24px;
     border: none;
@@ -62,7 +62,7 @@
 }
 
 .continue-shopping-btn:hover {
-    background: #3c3489;
+    background: var(--primary-dark);
 }
 
 .saved-items-message {

@@ -80,7 +80,7 @@
     content: '✓';
     position: absolute;
     left: 0;
-    color: #534AB7;
+    color: var(--primary-color);
     font-weight: bold;
 }
 

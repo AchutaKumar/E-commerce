@@ -1,208 +1,264 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import "../static/Login.css";
+import React from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import { CheckCircle, Circle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import '../static/SignupPage.css';
 
-const SignupPage = () => {
+// Form Validation Schema using Yup
+const SignUpSchema = Yup.object().shape({
+    username: Yup.string()
+        .min(3, 'Username must be at least 3 characters')
+        .matches(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores')
+        .required('Username is required'),
+    email: Yup.string()
+        .email('Invalid email address')
+        .required('Email is required'),
+    password: Yup.string()
+        .min(8, 'At least 8 characters required')
+        .matches(/[A-Z]/, 'One uppercase letter required')
+        .matches(/[0-9]/, 'One number required')
+        .matches(/[!@#$%^&*(),.?":{}|<>]/, 'One special character required')
+        .required('Password is required'),
+    confirmPassword: Yup.string()
+        .oneOf([Yup.ref('password'), null], 'Passwords do not match.')
+        .required('Confirm Password is required'),
+});
+
+export default function SignUpPage() {
     const BASE_URL = import.meta.env.VITE_DJANGO_BASE_URL;
-    const [form, setForm] = useState({ username: '', password: '', password2: '', email: '', phone_number: '' });
-    const [msg, setMsg] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showPassword2, setShowPassword2] = useState(false);
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+    const initialValues = {
+        username: '',
+        email: '',
+        phone_number: '',
+        password: '',
+        confirmPassword: '',
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setMsg('');
-        
-        if (form.password.length < 8) {
-            setMsg('Password must be at least 8 characters long');
-            return;
-        }
-        
-        if (form.password !== form.password2) {
-            setMsg('Passwords do not match');
-            return;
-        }
+    const handleSubmit = async (values, { setSubmitting, setStatus }) => {
+        setStatus(null);
         try {
             const res = await fetch(`${BASE_URL}/api/register/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(form)
+                body: JSON.stringify({
+                    username: values.username,
+                    email: values.email,
+                    password: values.password,
+                    password2: values.confirmPassword,
+                    phone_number: values.phone_number || ''
+                })
             });
+
             const data = await res.json();
+
             if (res.ok) {
-                setMsg('Registration successful');
+                setStatus({ type: 'success', message: 'Registration successful! Redirecting to login...' });
                 setTimeout(() => {
                     navigate('/login');
-                }, 1400);
+                }, 1500);
             } else {
-                setMsg(data.username || data.email || data.password || data.password2 || JSON.stringify(data));
+                let errorMsg = 'Registration failed. Please check your inputs.';
+                if (typeof data.detail === 'string') {
+                    errorMsg = data.detail;
+                } else if (typeof data.error === 'string') {
+                    errorMsg = data.error;
+                } else if (typeof data === 'object' && data !== null) {
+                    const firstVal = Object.values(data)[0];
+                    if (Array.isArray(firstVal)) {
+                        errorMsg = firstVal[0];
+                    } else if (typeof firstVal === 'string') {
+                        errorMsg = firstVal;
+                    }
+                }
+                setStatus({ type: 'error', message: errorMsg });
             }
         } catch (error) {
-            setMsg('An error occurred');
+            setStatus({ type: 'error', message: 'A network error occurred. Please check your connection and try again.' });
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
-        <div className="login-page-wrap">
-            <div className="login-image-side">
-                <div className="login-image-content">
-                    <h1>LoyalKart</h1>
-                    <p>Join us to discover premium products, exclusive deals, and a seamless shopping experience.</p>
-                </div>
-            </div>
-
-            <div className="login-form-side">
-                <div className="login-form-container">
-                    <div className="login-header">
-                        <h2>Create Account</h2>
-                        <p>Please enter your details to sign up.</p>
+        <div className="signup-page">
+            {/* Main Content Area */}
+            <main className="main-content">
+                <div className="grid-wrapper">
+                    {/* Left Side: Visual Anchor */}
+                    <div className="visual-anchor">
+                        <div
+                            className="visual-image"
+                            style={{
+                                backgroundImage: `url('https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1470&auto=format&fit=crop')`,
+                            }}
+                        />
+                        <div className="visual-overlay" />
+                        <div className="visual-text-content">
+                            <h1 className="visual-title">Elevate your shopping experience.</h1>
+                            <p className="visual-subtitle">
+                                Join LoyalKart to discover exclusive deals, premium products, and a seamless checkout experience.
+                            </p>
+                        </div>
                     </div>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="login-form-group">
-                            <label htmlFor="username">Username</label>
-                            <input
-                                type="text"
-                                id="username"
-                                name="username"
-                                placeholder="Choose a username"
-                                value={form.username}
-                                onChange={handleChange}
-                                required
-                                className="login-input"
-                            />
+                    {/* Right Side: Signup Form */}
+                    <div className="form-section">
+                        <div className="form-wrapper">
+                            <header className="form-header">
+                                <h2 className="form-title">Create an account</h2>
+                                <p className="form-subtitle">Welcome to LoyalKart. Please enter your details to register.</p>
+                            </header>
+
+                            <Formik
+                                initialValues={initialValues}
+                                validationSchema={SignUpSchema}
+                                onSubmit={handleSubmit}
+                            >
+                                {({ isSubmitting, values, errors, touched, status }) => {
+                                    // Real-time password requirement checks
+                                    const pwd = values.password;
+                                    const ruleLength = pwd.length >= 8;
+                                    const ruleUpper = /[A-Z]/.test(pwd);
+                                    const ruleNumber = /[0-9]/.test(pwd);
+                                    const ruleSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+
+                                    return (
+                                        <Form className="signup-form">
+                                            {status && (
+                                                <div
+                                                    className="error-msg"
+                                                    style={{
+                                                        padding: '12px',
+                                                        backgroundColor: status.type === 'success' ? '#d1fae5' : '#fee2e2',
+                                                        color: status.type === 'success' ? '#065f46' : '#991b1b',
+                                                        borderRadius: '8px',
+                                                        textAlign: 'center',
+                                                        fontWeight: 500,
+                                                        marginBottom: '16px'
+                                                    }}
+                                                >
+                                                    {status.message}
+                                                </div>
+                                            )}
+
+                                            <div className="form-fields">
+                                                {/* Username */}
+                                                <div className="form-group">
+                                                    <label htmlFor="username" className="form-label">Username</label>
+                                                    <Field
+                                                        type="text"
+                                                        id="username"
+                                                        name="username"
+                                                        placeholder="Choose a username"
+                                                        autoComplete="username"
+                                                        className={`form-input ${errors.username && touched.username ? 'input-error' : ''}`}
+                                                    />
+                                                    <ErrorMessage name="username" component="div" className="error-msg" />
+                                                </div>
+
+                                                {/* Email */}
+                                                <div className="form-group">
+                                                    <label htmlFor="email" className="form-label">Email</label>
+                                                    <Field
+                                                        type="email"
+                                                        id="email"
+                                                        name="email"
+                                                        placeholder="Email address"
+                                                        autoComplete="email"
+                                                        className={`form-input ${errors.email && touched.email ? 'input-error' : ''}`}
+                                                    />
+                                                    <ErrorMessage name="email" component="div" className="error-msg" />
+                                                </div>
+
+                                                {/* Phone Number (Optional) */}
+                                                <div className="form-group">
+                                                    <label htmlFor="phone_number" className="form-label">Phone Number (Optional)</label>
+                                                    <Field
+                                                        type="tel"
+                                                        id="phone_number"
+                                                        name="phone_number"
+                                                        placeholder="Enter phone number"
+                                                        autoComplete="tel"
+                                                        className="form-input"
+                                                    />
+                                                </div>
+
+                                                {/* Password */}
+                                                <div className="form-group">
+                                                    <label htmlFor="password" className="form-label">Password</label>
+                                                    <Field
+                                                        type="password"
+                                                        id="password"
+                                                        name="password"
+                                                        placeholder="Create a password"
+                                                        autoComplete="new-password"
+                                                        className={`form-input ${errors.password && touched.password ? 'input-error' : ''}`}
+                                                    />
+                                                    <ErrorMessage name="password" component="div" className="error-msg" />
+                                                </div>
+
+                                                {/* Password Requirements Dynamic Checklist */}
+                                                <div className="rules-container">
+                                                    <p className="rules-title">Password requirements:</p>
+
+                                                    <div className={`check-item ${ruleLength ? 'valid-rule' : 'invalid-rule'}`}>
+                                                        {ruleLength ? <CheckCircle size={18} /> : <Circle size={18} />}
+                                                        <span>At least 8 characters</span>
+                                                    </div>
+
+                                                    <div className={`check-item ${ruleUpper ? 'valid-rule' : 'invalid-rule'}`}>
+                                                        {ruleUpper ? <CheckCircle size={18} /> : <Circle size={18} />}
+                                                        <span>One uppercase letter</span>
+                                                    </div>
+
+                                                    <div className={`check-item ${ruleNumber ? 'valid-rule' : 'invalid-rule'}`}>
+                                                        {ruleNumber ? <CheckCircle size={18} /> : <Circle size={18} />}
+                                                        <span>One number</span>
+                                                    </div>
+
+                                                    <div className={`check-item ${ruleSpecial ? 'valid-rule' : 'invalid-rule'}`}>
+                                                        {ruleSpecial ? <CheckCircle size={18} /> : <Circle size={18} />}
+                                                        <span>One special character</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Confirm Password */}
+                                                <div className="form-group">
+                                                    <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                                                    <Field
+                                                        type="password"
+                                                        id="confirmPassword"
+                                                        name="confirmPassword"
+                                                        placeholder="Confirm your password"
+                                                        autoComplete="new-password"
+                                                        className={`form-input ${errors.confirmPassword && touched.confirmPassword ? 'input-error' : ''}`}
+                                                    />
+                                                    <ErrorMessage name="confirmPassword" component="div" className="error-msg" />
+                                                </div>
+                                            </div>
+
+                                            {/* Submit Button */}
+                                            <button type="submit" disabled={isSubmitting} className="submit-button">
+                                                {isSubmitting ? 'Registering...' : 'Sign Up'}
+                                            </button>
+                                        </Form>
+                                    );
+                                }}
+                            </Formik>
+
+                            <p className="signin-prompt">
+                                Already have an account?{' '}
+                                <Link to="/login" className="signin-link">Sign In</Link>
+                            </p>
                         </div>
-
-                        <div className="login-form-group">
-                            <label htmlFor="email">Email</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                placeholder="Enter your email"
-                                value={form.email}
-                                onChange={handleChange}
-                                required
-                                className="login-input"
-                            />
-                        </div>
-
-                        <div className="login-form-group">
-                            <label htmlFor="phone_number">Phone Number (Optional)</label>
-                            <input
-                                type="tel"
-                                id="phone_number"
-                                name="phone_number"
-                                placeholder="Enter your phone number"
-                                value={form.phone_number}
-                                onChange={handleChange}
-                                className="login-input"
-                            />
-                        </div>
-
-                        <div className="login-form-group">
-                            <label htmlFor="password">Password</label>
-                            <div style={{position: 'relative'}}>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    id="password"
-                                    name="password"
-                                    placeholder="Create a password"
-                                    value={form.password}
-                                    onChange={handleChange}
-                                    required
-                                    className="login-input"
-                                    style={{paddingRight: '40px'}}
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    title={showPassword ? "Hide password" : "Show password"}
-                                    style={{
-                                        position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', 
-                                        background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
-                                        display: 'flex', alignItems: 'center', color: '#6b7280'
-                                    }}
-                                >
-                                    {showPassword ? (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                                        </svg>
-                                    ) : (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="login-form-group">
-                            <label htmlFor="password2">Confirm Password</label>
-                            <div style={{position: 'relative'}}>
-                                <input
-                                    type={showPassword2 ? "text" : "password"}
-                                    id="password2"
-                                    name="password2"
-                                    placeholder="Confirm your password"
-                                    value={form.password2}
-                                    onChange={handleChange}
-                                    required
-                                    className="login-input"
-                                    style={{paddingRight: '40px'}}
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={() => setShowPassword2(!showPassword2)}
-                                    title={showPassword2 ? "Hide password" : "Show password"}
-                                    style={{
-                                        position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', 
-                                        background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
-                                        display: 'flex', alignItems: 'center', color: '#6b7280'
-                                    }}
-                                >
-                                    {showPassword2 ? (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                                        </svg>
-                                    ) : (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        {msg && (
-                            <div className={`login-msg ${msg.includes('successful') ? 'success' : 'error'}`}>
-                                {msg}
-                            </div>
-                        )}
-
-                        <button type="submit" className="login-submit-btn">
-                            Register
-                        </button>
-                    </form>
-
-                    <div className="login-footer-link">
-                        Already have an account? <Link to="/login">Login here</Link>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
-};
-
-export default SignupPage;
+}
