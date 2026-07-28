@@ -27,18 +27,8 @@ export const ROUTES = {
   NOT_FOUND: '*',
 };
 
-/**
- * Helper: builds the product detail path for a given product id.
- * @param {number|string} id - The product ID
- * @returns {string} The product detail URL path
- */
 export const productDetailPath = (id) => `/products/${id}`;
 
-/**
- * Helper: builds the shop path with optional search query and/or category filter.
- * @param {{ q?: string; category?: string }} [params] - Optional query parameters
- * @returns {string} The shop URL path with query string
- */
 export const shopPath = (params) => {
   if (!params) return ROUTES.SHOP;
   const searchParams = new URLSearchParams();
@@ -49,4 +39,21 @@ export const shopPath = (params) => {
 };
 
 export const homePath = (params) => shopPath(params);
+
+/**
+ * Helper: returns the API base URL with fallback to Render backend if env is undefined in production.
+ * @returns {string} The formatted backend API base URL
+ */
+export const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_DJANGO_BASE_URL;
+  if (envUrl && envUrl.trim()) {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
+    return 'https://e-commerce-7dwo.onrender.com';
+  }
+  return 'http://127.0.0.1:8000';
+};
+
+
 

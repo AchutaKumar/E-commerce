@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { ArrowRight, Sparkles, ShoppingBag, ShieldCheck, Truck, RotateCcw, Star, Award, Users, ThumbsUp } from 'lucide-react';
-import { ROUTES } from '../utils/routes';
+import { ROUTES, getApiBaseUrl } from '../utils/routes';
 import ProductCard from '../components/ProductCard';
 import { ProductCardSkeleton } from '../components/SkeletonLoader';
 import '../static/LandingPage.css';
@@ -24,7 +24,8 @@ const NewsletterSchema = Yup.object().shape({
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const BASE_URL = import.meta.env.VITE_DJANGO_BASE_URL;
+  const BASE_URL = getApiBaseUrl();
+
 
   // Fetch dynamic landing data from Django backend
   const { data, isLoading, error } = useSWR(`${BASE_URL}/api/landing/data/`, fetcher, {

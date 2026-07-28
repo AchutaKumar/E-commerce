@@ -4,6 +4,7 @@ import useSWRInfinite from 'swr/infinite';
 import ProductCard from '../components/ProductCard';
 import '../static/ProductList.css';
 import { ProductListSkeleton } from '../components/SkeletonLoader';
+import { getApiBaseUrl } from '../utils/routes';
 
 const fetcher = async (url) => {
     try {
@@ -24,7 +25,8 @@ function ProductList() {
     const query = searchParams.get('q') || '';
     const selectedCategory = searchParams.get('category') || 'All';
 
-    const BASEURL = (import.meta.env.VITE_DJANGO_BASE_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+    const BASEURL = getApiBaseUrl();
+
 
     // Fetch categories with SWR
     const { data: categories = [] } = useSWR(

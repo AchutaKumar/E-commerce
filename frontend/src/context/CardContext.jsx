@@ -1,12 +1,14 @@
 import { createContext, useState, useContext, useEffect, useRef } from "react";
 import { authFetch, getAccessToken, isAuthenticated } from "../utils/auth";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getApiBaseUrl } from "../utils/routes";
 
 const CartContext = createContext()
 
 export const CartProvider = ({ children }) => {
     const navigate = useNavigate();
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL
+    const BASEURL = getApiBaseUrl();
+
     const requestCounter = useRef(0);
     const [cartItems, setCartItems] = useState(() => {
         try {

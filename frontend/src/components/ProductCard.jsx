@@ -2,11 +2,13 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from '../context/CardContext.jsx';
 import { isAuthenticated } from '../utils/auth.js';
+import { getApiBaseUrl } from '../utils/routes.js';
 import '../static/ProductCard.css';
 
 // Memoizing the ProductCard component to prevent unnecessary re-renders in list views
 const ProductCard = React.memo(function ProductCard({ product }) {
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
+    const BASEURL = getApiBaseUrl();
+
     const { addToCart } = useCart();
     const navigate = useNavigate();
 

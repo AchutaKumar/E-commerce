@@ -11,7 +11,7 @@ import {
   Info,
   ShieldCheck
 } from "lucide-react";
-import { ROUTES } from "../utils/routes";
+import { ROUTES, getApiBaseUrl } from "../utils/routes";
 import { useCart } from "../context/CardContext";
 import { isAuthenticated } from "../utils/auth";
 import ProductCard from "../components/ProductCard";
@@ -31,7 +31,8 @@ const ProductDetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
 
-  const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
+  const BASEURL = getApiBaseUrl();
+
 
   // Fetch product details from Django backend
   useEffect(() => {
