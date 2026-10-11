@@ -163,6 +163,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 X_FRAME_OPTIONS = 'DENY'
 
+
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
@@ -178,10 +179,11 @@ CORS_ALLOWED_ORIGINS = [
         'CORS_ALLOWED_ORIGINS',
         'http://localhost:3000,http://localhost:5173,http://localhost:5174,'
         'http://127.0.0.1:5173,http://127.0.0.1:5174,'
-        'https://e-commerce-1-ussz.onrender.com',
-        'e-commerce-u6dl-deafy0rx6-loyalsam.vercel.app',
+        'https://e-commerce-1-ussz.onrender.com,'
+        'https://e-commerce-u6dl-deafy0rx6-loyalsam.vercel.app',
     ).split(',')
     if origin.strip()
 ]
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
