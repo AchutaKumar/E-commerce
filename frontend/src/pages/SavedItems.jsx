@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL, apiUrl } from '../utils/api';
 import '../static/SavedItems.css';
 import * as Icon from '../components/Icons.jsx';
 import { ProductListSkeleton } from '../components/SkeletonLoader';
@@ -8,7 +9,6 @@ import { ProductListSkeleton } from '../components/SkeletonLoader';
 const SavedItems = () => {
     const [savedProducts, setSavedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,7 +23,7 @@ const SavedItems = () => {
             try {
                 // Fetch each saved product by ID to bypass pagination issues
                 const productPromises = watchlist.map(id => 
-                    fetch(`${BASEURL}/api/products/${id}/`).then(res => {
+                    fetch(apiUrl(`/api/products/${id}/`)).then(res => {
                         if (!res.ok) throw new Error(`Failed to fetch product ${id}`);
                         return res.json();
                     })
@@ -38,7 +38,7 @@ const SavedItems = () => {
         };
 
         fetchSavedItems();
-    }, [BASEURL]);
+    }, []);
 
     return (
         <div className="saved-items-container">

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authFetch } from "../utils/auth";
+import { API_BASE_URL, apiUrl } from "../utils/api";
 import "../static/AdminAddProduct.css";
 
 const AdminAddProduct = () => {
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
     const navigate = useNavigate();
 
     const [categories, setCategories] = useState([]);
@@ -24,7 +24,7 @@ const AdminAddProduct = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch(`${BASEURL}/api/category/`);
+                const res = await fetch(apiUrl('/api/category/'));
                 if (res.ok) {
                     const data = await res.json();
                     if (Array.isArray(data)) {
@@ -36,7 +36,7 @@ const AdminAddProduct = () => {
             }
         };
         fetchCategories();
-    }, [BASEURL]);
+    }, []);
 
     const handleInputChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -77,7 +77,7 @@ const AdminAddProduct = () => {
                 formData.append("image", imageFile);
             }
 
-            const res = await authFetch(`${BASEURL}/api/products/create/`, {
+            const res = await authFetch(apiUrl('/api/products/create/'), {
                 method: "POST",
                 body: formData
             });

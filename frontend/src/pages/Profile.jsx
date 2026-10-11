@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { clearToken, getAccessToken } from '../utils/auth.js';
+import { API_BASE_URL, apiUrl } from '../utils/api.js';
 import { useCart } from '../context/CardContext.jsx';
 import '../static/Profile.css';
 import { useState, useEffect } from "react";
@@ -9,7 +10,6 @@ import { ProfileSkeleton } from '../components/SkeletonLoader';
 
 
 const Profile = () => {
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
     const [profileData, setProfileData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({ username: '', email: '', phone_number: '' });
@@ -27,7 +27,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await fetch(`${BASEURL}/api/profile/`, {
+                const res = await fetch(apiUrl('/api/profile/'), {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -49,7 +49,7 @@ const Profile = () => {
         // Load watchlist count from localStorage
         const watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');
         setWatchlistCount(watchlist.length);
-    }, [BASEURL]);
+    }, []);
 
     const initials = profileData?.username?.slice(0, 2).toUpperCase() ?? "?";
 
@@ -75,7 +75,7 @@ const Profile = () => {
         }
 
         try {
-            const res = await fetch(`${BASEURL}/api/profile/`, {
+            const res = await fetch(apiUrl('/api/profile/'), {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

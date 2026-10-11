@@ -1,11 +1,11 @@
 import { useCart } from "../context/CardContext.jsx";
 import { Link, useNavigate } from "react-router-dom";
+import { apiUrl } from "../utils/api";
 import '../static/CartPage.css';
 
 function CartPage() {
     const { cartItems, total, removeFromCart, updateQuantity } = useCart();
     const navigate = useNavigate();
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
 
     const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -41,7 +41,7 @@ function CartPage() {
                                 <div className="cart-item-thumb">
                                     {item.product_image ? (
                                         <img
-                                            src={`${BASEURL}${item.product_image}`}
+                                            src={apiUrl(item.product_image)}
                                             alt={item.product_name}
                                             onError={(e) => { e.target.src = 'https://via.placeholder.com/100x100?text=No+Image' }}
                                         />

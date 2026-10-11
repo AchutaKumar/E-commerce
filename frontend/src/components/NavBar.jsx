@@ -5,7 +5,6 @@ import { clearToken, isAuthenticated, isAdminUser } from '../utils/auth.js';
 import '../static/NavBar.css';
 
 const NavBar = () => {
-    const BASE_URL = import.meta.env.VITE_DJANGO_BASE_URL
     const { cartItems, clearCart } = useCart();
     const navigate = useNavigate();
     const location = useLocation();

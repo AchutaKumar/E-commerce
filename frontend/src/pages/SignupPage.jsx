@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { apiUrl } from "../utils/api";
 import "../static/Login.css";
 
 const SignupPage = () => {
-    const BASE_URL = import.meta.env.VITE_DJANGO_BASE_URL;
     const [form, setForm] = useState({ username: '', password: '', password2: '', email: '', phone_number: '' });
     const [msg, setMsg] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +28,7 @@ const SignupPage = () => {
             return;
         }
         try {
-            const res = await fetch(`${BASE_URL}/api/register/`, {
+            const res = await fetch(apiUrl('/api/register/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

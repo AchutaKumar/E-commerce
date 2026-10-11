@@ -21,10 +21,9 @@ import NotFound from "./pages/NotFound";
 import { CartProvider } from "./context/CardContext.jsx";
 import { useEffect } from "react";
 import { getAccessToken, clearToken } from "./utils/auth";
+import { API_BASE_URL, apiUrl } from "./utils/api";
 
 const App = () => {
-  const BASE_URL = import.meta.env.VITE_DJANGO_BASE_URL;
-
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
@@ -34,7 +33,7 @@ const App = () => {
       const token = getAccessToken();
       if (token) {
         try {
-          const res = await fetch(`${BASE_URL}/api/profile/`, {
+          const res = await fetch(apiUrl('/api/profile/'), {
             headers: {
               Authorization: `Bearer ${token}`
             }
@@ -49,7 +48,7 @@ const App = () => {
       }
     };
     verifyToken();
-  }, [BASE_URL]);
+  }, [API_BASE_URL]);
 
   return (
 	<Router>

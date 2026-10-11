@@ -3,6 +3,7 @@ import { ArrowDownRight } from 'lucide-react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import ProductCard from '../components/ProductCard';
+import { apiUrl } from '../utils/api';
 import '../static/ProductList.css';
 import { ProductListSkeleton } from '../components/SkeletonLoader';
 
@@ -17,11 +18,9 @@ function ProductList() {
     const query = searchParams.get('q') || '';
     const selectedCategory = searchParams.get('category') || 'All';
 
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
-
     // Fetch categories with SWR
     const { data: categories = [], error: categoriesError } = useSWR(
-        `${BASEURL}/api/category/`,
+        apiUrl('/api/category/'),
         fetcher,
         {
             fallbackData: (() => {
@@ -47,7 +46,7 @@ function ProductList() {
             ...(selectedCategory !== 'All' && { category: selectedCategory })
         });
         
-        return `${BASEURL}/api/products/?${params.toString()}`;
+        return `${apiUrl('/api/products/')}?${params.toString()}`;
     };
 
     const { data, error, size, setSize, isValidating } = useSWRInfinite(getKey, fetcher, {
@@ -120,7 +119,7 @@ function ProductList() {
                         {featuredProduct?.image ? (
                             <img
                                 className="landing-image"
-                                src={`${BASEURL}${featuredProduct.image}`}
+                                src={apiUrl(featuredProduct.image)}
                                 alt={featuredProduct.name}
                             />
                         ) : (

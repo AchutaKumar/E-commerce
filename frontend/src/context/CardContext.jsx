@@ -1,12 +1,12 @@
 import { createContext, useState, useContext, useEffect, useRef } from "react";
 import { authFetch, getAccessToken, isAuthenticated } from "../utils/auth";
+import { apiUrl } from "../utils/api";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const CartContext = createContext()
 
 export const CartProvider = ({ children }) => {
     const navigate = useNavigate();
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL
     const requestCounter = useRef(0);
     const [cartItems, setCartItems] = useState(() => {
         try {
@@ -45,7 +45,7 @@ export const CartProvider = ({ children }) => {
     
     const fetchCart = async () => {
         try {
-            const res = await authFetch(`${BASEURL}/api/cart/`)
+            const res = await authFetch(apiUrl('/api/cart/'))
             const data = await res.json()
             updateCartState(data)
         } catch (error) {
@@ -92,7 +92,7 @@ export const CartProvider = ({ children }) => {
 
         const currentReq = ++requestCounter.current;
         try {
-            const res = await authFetch(`${BASEURL}/api/cart/add/`, {
+            const res = await authFetch(apiUrl('/api/cart/add/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -128,7 +128,7 @@ export const CartProvider = ({ children }) => {
 
         const currentReq = ++requestCounter.current;
         try {
-            const res = await authFetch(`${BASEURL}/api/cart/remove/`, {
+            const res = await authFetch(apiUrl('/api/cart/remove/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -168,7 +168,7 @@ export const CartProvider = ({ children }) => {
 
         const currentReq = ++requestCounter.current;
         try {
-            const res = await authFetch(`${BASEURL}/api/cart/update/`, {
+            const res = await authFetch(apiUrl('/api/cart/update/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

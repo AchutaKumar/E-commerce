@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../context/CardContext.jsx";
 import { authFetch } from "../utils/auth.js";
+import { apiUrl } from "../utils/api.js";
 import '../static/CheakoutPage.css';
 
 function CheakoutPage() {
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
     const navigate = useNavigate();
     const { cartItems, total, clearCart } = useCart();
 
@@ -29,7 +29,7 @@ function CheakoutPage() {
         setLoading(true);
         setMessage('');
         try {
-            const res = await authFetch(`${BASEURL}/api/orders/create/`, {
+            const res = await authFetch(apiUrl('/api/orders/create/'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
@@ -179,7 +179,7 @@ function CheakoutPage() {
                                     <div className="checkout-item-thumb-wrap">
                                         {item.product_image ? (
                                             <img
-                                                src={`${BASEURL}${item.product_image}`}
+                                                src={apiUrl(item.product_image)}
                                                 alt={item.product_name}
                                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/80x80?text=No+Image' }}
                                             />

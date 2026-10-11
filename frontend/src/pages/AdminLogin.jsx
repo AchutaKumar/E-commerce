@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { saveToken, isAdminUser, clearToken } from "../utils/auth";
+import { apiUrl } from "../utils/api";
 import "../static/AdminLogin.css";
 
 const AdminLogin = () => {
-    const BASE_URL = import.meta.env.VITE_DJANGO_BASE_URL;
     const [form, setForm] = useState({ username: '', password: '' });
     const [msg, setMsg] = useState('');
     const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ const AdminLogin = () => {
         setMsg('');
         setLoading(true);
         try {
-            const res = await fetch(`${BASE_URL}/api/login/`, {
+            const res = await fetch(apiUrl('/api/login/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

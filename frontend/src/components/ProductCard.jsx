@@ -1,15 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from '../context/CardContext.jsx';
 import { isAuthenticated } from '../utils/auth.js';
+import { apiUrl } from '../utils/api.js';
 import '../static/ProductCard.css';
 
 function ProductCard({ product }) {
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
     const { addToCart } = useCart();
     const navigate = useNavigate();
 
     const imageUrl = product.image
-        ? `${BASEURL}${product.image}`
+        ? apiUrl(product.image)
         : 'https://via.placeholder.com/400x400?text=No+Image';
 
     const handleAddToCart = (e) => {

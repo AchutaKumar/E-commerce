@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import '../static/ProductDetails.css'
 import { useCart } from '../context/CardContext'
 import { isAuthenticated } from '../utils/auth.js';
+import { apiUrl } from '../utils/api.js';
 import ProductCard from '../components/ProductCard';
 import * as Icon from '../components/Icons.jsx';
 import { ProductDetailSkeleton } from '../components/SkeletonLoader';
@@ -17,8 +18,6 @@ const fetcher = async (url) => {
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const BASEURL = import.meta.env.VITE_DJANGO_BASE_URL;
-    
     const [quantity, setQuantity] = useState(1);
     const [addedToCart, setAddedToCart] = useState(false);
     const [addedToWatchlist, setAddedToWatchlist] = useState(false);
@@ -31,15 +30,15 @@ function ProductDetail() {
         }
     }, [id]);
 
-    const { data: product, error, isLoading } = useSWR(`${BASEURL}/api/products/${id}/`, fetcher);
+    const { data: product, error, isLoading } = useSWR(apiUrl(`/api/products/${id}/`), fetcher);
     
     const { data: relatedData } = useSWR(
-        product?.category ? `${BASEURL}/api/products/?category=${product.category.id}` : null,
+        product?.category ? apiUrl(`/api/products/?category=${product.category.id}`) : null,
         fetcher
     );
     
     const { data: allData } = useSWR(
-        product ? `${BASEURL}/api/products/` : null,
+        product ? apiUrl('/api/products/') : null,
         fetcher
     );
 
@@ -134,14 +133,14 @@ function ProductDetail() {
                 <div className="product-detail-content">
                     <div className="product-detail-image-wrapper">
                         <img
-                            src={product.image ? `${BASEURL}${product.image}` : 'https://via.placeholder.com/400x400?text=No+Image'}
+                            src={product.image ? apiUrl(product.image) : 'https://via.placeholder.com/400x400?text=No+Image'}
                             alt={product.name}
                             className="product-detail-image"
                             onError={(e) => {
                                 console.error('Image failed to load:', e.target.src);
                                 e.target.src = 'https://via.placeholder.com/400x400?text=No+Image';
                             }}
-                            onLoad={() => console.log('Image loaded successfully:', `${BASEURL}${product.image}`)}
+                            onLoad={() => console.log('Image loaded successfully:', apiUrl(product.image))}
                         />
                     </div>
 
