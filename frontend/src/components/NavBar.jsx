@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from '../context/CardContext.jsx';
 import { clearToken, isAuthenticated, isAdminUser } from '../utils/auth.js';
 import '../static/NavBar.css';
@@ -38,6 +38,15 @@ const NavBar = () => {
     return (
         <nav className="navbar">
             <Link to='/' className="navbar-logo">LoyalKart</Link>
+
+            <div className="navbar-links" aria-label="Main navigation">
+                <NavLink to="/" end className={({ isActive }) => `navbar-link${isActive ? ' active' : ''}`}>Shop</NavLink>
+                {isLoggedIn && (
+                    <NavLink to="/saved-items" className={({ isActive }) => `navbar-link${isActive ? ' active' : ''}`}>Saved</NavLink>
+                )}
+                <NavLink to="/shipping-info" className={({ isActive }) => `navbar-link${isActive ? ' active' : ''}`}>Shipping</NavLink>
+                <NavLink to="/about" className={({ isActive }) => `navbar-link${isActive ? ' active' : ''}`}>About</NavLink>
+            </div>
 
             <form className={`navbar-search ${isMobileSearchOpen ? 'mobile-open' : ''}`} onSubmit={handleSearch}>
                 <button 
@@ -103,8 +112,8 @@ const NavBar = () => {
                         </Link>
 
                         {isAdmin && (
-                            <Link to='/admin/add-product' className="navbar-btn-ghost" style={{ marginRight: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
-                                Admin Panel
+                            <Link to='/admin/add-product' className="navbar-btn-ghost">
+                                Admin
                             </Link>
                         )}
 

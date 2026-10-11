@@ -10,7 +10,7 @@ class Category(models.Model):
         return self.name
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, related_name ='product', on_delete = models.CASCADE)
+    category = models.ForeignKey(Category, related_name='product', on_delete=models.PROTECT)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -33,13 +33,17 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    shipping_name = models.CharField(max_length=150, blank=True, default='')
+    shipping_address = models.TextField(blank=True, default='')
+    phone_number = models.CharField(max_length=20, blank=True, default='')
+    payment_method = models.CharField(max_length=20, default='COD')
 
     def __str__(self):
         return f'Order {self.id}'
     
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='item', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10,decimal_places=2)
     

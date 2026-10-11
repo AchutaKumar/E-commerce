@@ -1,4 +1,5 @@
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { ArrowDownRight } from 'lucide-react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import ProductCard from '../components/ProductCard';
@@ -54,6 +55,11 @@ function ProductList() {
     });
 
     const products = data ? data.flatMap(page => page?.results || []) : [];
+    const featuredProduct = products[0];
+    const isLandingView = !query && selectedCategory === 'All';
+    const selectedCategoryName = categories.find(
+        (category) => category.id.toString() === selectedCategory || category.name === selectedCategory
+    )?.name;
     const isLoadingInitialData = !data && !error;
     const isLoadingMore = isLoadingInitialData || (size > 0 && data && typeof data[size - 1] === "undefined");
     const hasMore = data && data[data.length - 1]?.next != null;
@@ -63,6 +69,10 @@ function ProductList() {
         if (catId !== 'All') params.category = catId;
         if (query) params.q = query; // preserve search query
         setSearchParams(params);
+    };
+
+    const scrollToCollection = () => {
+        document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' });
     };
 
     if (error) {
@@ -86,19 +96,60 @@ function ProductList() {
 
     return (
         <div className="products-container">
-            <div className="products-catalog-header">
-                {query ? (
-                    <h1 className="products-title">Search results for "{query}"</h1>
-                ) : (
-                    <div className="hero-banner">
-                        <div className="hero-content">
-                            <h1>New Arrivals</h1>
-                            <p>Discover premium quality products curated just for you.</p>
+            {isLandingView && (
+                <section className="landing-hero" aria-labelledby="landing-title">
+                    <div className="landing-copy">
+                        <p className="landing-kicker">THE LOYALKART EDIT</p>
+                        <h1 id="landing-title">A considered mix<br />for everyday life.</h1>
+                        <p className="landing-description">
+                            {categories.length > 0
+                                ? `Explore the collection across ${categories.map((category) => category.name.toLowerCase()).join(', ')}.`
+                                : 'Explore the latest products in the LoyalKart collection.'}
+                        </p>
+                        <button type="button" className="landing-cta" onClick={scrollToCollection}>
+                            <span>Explore the collection</span>
+                            <ArrowDownRight size={18} aria-hidden="true" />
+                        </button>
+                        <div className="landing-footnote">
+                            <span>THE LATEST ADDITIONS</span>
+                            {data?.[0]?.count != null && <span>{data[0].count} products in the shop</span>}
                         </div>
+                    </div>
+
+                    <div className="landing-visual">
+                        {featuredProduct?.image ? (
+                            <img
+                                className="landing-image"
+                                src={`${BASEURL}${featuredProduct.image}`}
+                                alt={featuredProduct.name}
+                            />
+                        ) : (
+                            <div className="landing-image-placeholder" aria-hidden="true">LK</div>
+                        )}
+                        <span className="landing-image-index" aria-hidden="true">LOYALKART / 01</span>
+                        {featuredProduct && (
+                            <Link to={`/products/${featuredProduct.id}`} className="landing-product-caption">
+                                <span>JUST ADDED</span>
+                                <strong>{featuredProduct.name}</strong>
+                                <span>${parseFloat(featuredProduct.price).toFixed(2)} <span aria-hidden="true">↗</span></span>
+                            </Link>
+                        )}
+                    </div>
+                </section>
+            )}
+
+            <div className="products-catalog-header" id="collection">
+                {query ? (
+                    <h1 className="products-title">Search results for &quot;{query}&quot;</h1>
+                ) : (
+                    <div className="catalog-heading">
+                        <p className="catalog-eyebrow">BROWSE LOYALKART</p>
+                        <h1 className="products-title">
+                            {isLandingView ? 'The collection' : selectedCategoryName || 'The collection'}
+                        </h1>
                     </div>
                 )}
 
-                {/* Category Filtering pills row */}
                 <div className="category-filter-bar">
                     <button
                         className={`category-pill ${selectedCategory === 'All' ? 'active' : ''}`}

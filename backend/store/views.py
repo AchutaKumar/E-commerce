@@ -1,15 +1,34 @@
+import logging
+from decimal import Decimal
+
+from django.db import DatabaseError, transaction
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django.contrib.auth.models import User
-from .serializers import UserProfileSerializer, UserRegistrationSerializer, UserSerializer
+from django.db.models import Q
 from rest_framework import status
-from .models import CartItem, OrderItem, Product, Category, Cart, Order
-from .serializers import CartSerializer, ProductSerializer, CategorySerializer
+from rest_framework.pagination import PageNumberPagination
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from .models import Cart, CartItem, Category, Order, OrderItem, Product, UserProfile
+from .serializers import (
+    CartAddSerializer,
+    CartRemoveSerializer,
+    CartSerializer,
+    CartUpdateSerializer,
+    CategorySerializer,
+    CheckoutSerializer,
+    MyTokenObtainPairSerializer,
+    ProductCreateSerializer,
+    ProductSerializer,
+    UserProfileSerializer,
+    UserRegistrationSerializer,
+    UserSerializer,
+)
 from django.views.decorators.cache import cache_page
 
-from rest_framework.pagination import PageNumberPagination
-from django.db.models import Q
+logger = logging.getLogger(__name__)
 
 class ProductPagination(PageNumberPagination):
     page_size = 12
@@ -67,70 +86,137 @@ def get_cart(req):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_to_cart(req):
+    input_serializer = CartAddSerializer(data=req.data)
+    if not input_serializer.is_valid():
+        return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    product_id = input_serializer.validated_data['product_id']
+    quantity = input_serializer.validated_data['quantity']
     try:
-        product_id = req.data.get('product_id')
-        quantity = int(req.data.get('quantity', 1))
-        product = Product.objects.get(id=product_id)
-        cart, created = Cart.objects.prefetch_related('item__product').get_or_create(user=req.user)
-        item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        item.quantity = (item.quantity + quantity) if not created else quantity
-        item.save()
-        cart_prefetched = Cart.objects.prefetch_related('item__product').get(id=cart.id)
-        return Response(CartSerializer(cart_prefetched).data)
+        product = Product.objects.get(pk=product_id)
     except Product.DoesNotExist:
         return Response({'error': 'Product not found'}, status=404)
+
+    with transaction.atomic():
+        cart, _ = Cart.objects.get_or_create(user=req.user)
+        Cart.objects.select_for_update().get(pk=cart.pk)
+        item, created = CartItem.objects.select_for_update().get_or_create(
+            cart=cart,
+            product=product,
+            defaults={'quantity': quantity},
+        )
+        if not created:
+            item.quantity += quantity
+        item.save(update_fields=['quantity'])
+        updated_cart = Cart.objects.prefetch_related('item__product').get(pk=cart.pk)
+
+    return Response(CartSerializer(updated_cart).data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def remove_from_cart(req):
-    item_id = req.data.get('item_id')
-    CartItem.objects.filter(id=item_id, cart__user=req.user).delete()
-    cart, created = Cart.objects.prefetch_related('item__product').get_or_create(user=req.user)
-    return Response(CartSerializer(cart).data)
+    input_serializer = CartRemoveSerializer(data=req.data)
+    if not input_serializer.is_valid():
+        return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    with transaction.atomic():
+        cart = Cart.objects.select_for_update().filter(user=req.user).first()
+        if cart is None:
+            return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        item = CartItem.objects.select_for_update().filter(
+            pk=input_serializer.validated_data['item_id'],
+            cart=cart,
+        ).first()
+        if item is None:
+            return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        item.delete()
+        updated_cart = Cart.objects.prefetch_related('item__product').get(pk=cart.pk)
+
+    return Response(CartSerializer(updated_cart).data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_cart_quantity(req):
-    item_id = req.data.get('item_id')
-    quantity = req.data.get('quantity')
+    input_serializer = CartUpdateSerializer(data=req.data)
+    if not input_serializer.is_valid():
+        return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if not item_id or quantity is None:
-        return Response({'error': 'Item ID and quantity are required'}, status=400)
+    with transaction.atomic():
+        cart = Cart.objects.select_for_update().filter(user=req.user).first()
+        if cart is None:
+            return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    try:
-        item = CartItem.objects.select_related('cart').get(id=item_id, cart__user=req.user)
-        cart = item.cart
-        if int(quantity) < 1:
+        item = CartItem.objects.select_for_update().filter(
+            pk=input_serializer.validated_data['item_id'],
+            cart=cart,
+        ).first()
+        if item is None:
+            return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        quantity = input_serializer.validated_data['quantity']
+        if quantity == 0:
             item.delete()
         else:
             item.quantity = quantity
-            item.save()
-        cart_prefetched = Cart.objects.prefetch_related('item__product').get(id=cart.id)
-        return Response(CartSerializer(cart_prefetched).data)
-    except CartItem.DoesNotExist:
-        return Response({'error': 'Cart item not found'}, status=404)
+            item.save(update_fields=['quantity'])
+
+        updated_cart = Cart.objects.prefetch_related('item__product').get(pk=cart.pk)
+
+    return Response(CartSerializer(updated_cart).data)
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_order(req):
+    input_serializer = CheckoutSerializer(data=req.data)
+    if not input_serializer.is_valid():
+        return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    checkout = input_serializer.validated_data
     try:
-        phone = req.data.get('phone')
-        if not phone or not phone.isdigit() or len(phone) < 10:
-            return Response({'error': 'Invalid phone number'}, status=400)
-        cart, created = Cart.objects.prefetch_related('item__product').get_or_create(user=req.user)
-        items = list(cart.item.all())
-        if not items:
-            return Response({'error': 'Cart is empty'}, status=400)
-        total = sum(item.product.price * item.quantity for item in items)
-        order = Order.objects.create(user=req.user, total_amount=total)
-        OrderItem.objects.bulk_create([
-            OrderItem(order=order, product=item.product, quantity=item.quantity, price=item.product.price)
-            for item in items
-        ])
-        cart.item.all().delete()
-        return Response({'message': 'Order created successfully', 'order_id': order.id})
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        with transaction.atomic():
+            cart = Cart.objects.select_for_update().filter(user=req.user).first()
+            if cart is None:
+                return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
+            items = list(cart.item.select_for_update().select_related('product'))
+            if not items:
+                return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
+            total = sum(
+                (item.product.price * item.quantity for item in items),
+                Decimal('0.00'),
+            )
+            order = Order.objects.create(
+                user=req.user,
+                total_amount=total,
+                shipping_name=checkout['name'],
+                shipping_address=checkout['address'],
+                phone_number=checkout['phone'],
+                payment_method=checkout['payment_method'],
+            )
+            OrderItem.objects.bulk_create([
+                OrderItem(
+                    order=order,
+                    product=item.product,
+                    quantity=item.quantity,
+                    price=item.product.price,
+                )
+                for item in items
+            ])
+            cart.item.all().delete()
+    except DatabaseError:
+        logger.exception('Database error while creating order for user_id=%s', req.user.pk)
+        return Response(
+            {'error': 'Unable to create order. Please try again.'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    return Response(
+        {'message': 'Order created successfully', 'order_id': order.pk},
+        status=status.HTTP_201_CREATED,
+    )
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -144,65 +230,40 @@ def register_view(req):
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
 def get_profile(req):
+    UserProfile.objects.get_or_create(user=req.user)
+    user = User.objects.select_related('userprofile').get(pk=req.user.pk)
+
     if req.method == 'PUT':
-        user = req.user
-        data = req.data
-        new_username = data.get('username')
-        new_email = data.get('email')
-        new_phone = data.get('phone_number')
+        serializer = UserProfileSerializer(user, data=req.data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        user = User.objects.select_related('userprofile').get(pk=user.pk)
+        return Response(UserProfileSerializer(user).data)
 
-        if new_username and new_username != user.username:
-            if User.objects.filter(username=new_username).exists():
-                return Response({'error': 'Username is already taken.'}, status=status.HTTP_400_BAD_REQUEST)
-            user.username = new_username
-
-        if new_email and new_email != user.email:
-            if User.objects.filter(email=new_email).exists():
-                return Response({'error': 'Email is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
-            user.email = new_email
-
-        if new_phone is not None:
-            from .models import UserProfile
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            profile.phone_number = new_phone
-            profile.save()
-
-        try:
-            user.save()
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Refresh with userprofile explicitly for accurate serialization
-        user = User.objects.select_related('userprofile').get(id=user.id)
-        serializer = UserProfileSerializer(user)
-        return Response(serializer.data)
-        
-    user = User.objects.select_related('userprofile').get(id=req.user.id)
-    serializer = UserProfileSerializer(user)
-    return Response(serializer.data)
+    return Response(UserProfileSerializer(user).data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def create_product(req):
-    try:
-        category_id = req.data.get('category')
-        category = Category.objects.get(id=category_id)
-        product = Product.objects.create(
-            category=category,
-            name=req.data.get('name'),
-            description=req.data.get('description', ''),
-            price=req.data.get('price'),
-            image=req.FILES.get('image')
-        )
-        serializer = ProductSerializer(product, context={'request': req})
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    except Category.DoesNotExist:
-        return Response({'error': 'Category not found'}, status=400)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    input_serializer = ProductCreateSerializer(data=req.data)
+    if not input_serializer.is_valid():
+        first_error = next(iter(input_serializer.errors.values()))[0]
+        return Response({'error': str(first_error)}, status=status.HTTP_400_BAD_REQUEST)
 
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import MyTokenObtainPairSerializer
+    try:
+        product = input_serializer.save()
+    except DatabaseError:
+        logger.exception('Database error while creating product for user_id=%s', req.user.pk)
+        return Response(
+            {'error': 'Unable to create product. Please try again.'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    return Response(
+        ProductSerializer(product, context={'request': req}).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
