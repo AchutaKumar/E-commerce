@@ -167,7 +167,7 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
         'ALLOWED_HOSTS',
-        'e-commerce-7dwo.onrender.com,localhost,127.0.0.1',
+        'e-commerce-7dwo.onrender.com,localhost,127.0.0.1,e-commerce-u6dl.vercel.app',
     ).split(',')
     if host.strip()
 ]
