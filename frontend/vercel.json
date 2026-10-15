@@ -2,18 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/api",
-      "destination": "https://loyal-kart.vercel.app/api"
-    },
-    {
-      "source": "/api/:path*",
-      "destination": "https://loyal-kart.vercel.app/api/:path*"
-    },
-    {
-      "source": "/media/:path*",
-      "destination": "https://loyal-kart.vercel.app/media/:path*"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

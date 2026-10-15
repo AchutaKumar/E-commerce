@@ -15,9 +15,8 @@ domain before deploying:
 1. **Frontend**
    - Root Directory: `frontend`
    - Framework Preset: Vite
-   - The frontend sends API requests to its own `/api/...` path. Its Vercel
-     rewrites forward `/api` and `/media` to `https://loyal-kart.vercel.app`,
-     avoiding browser cross-origin requests.
+   - Production API requests go directly to `https://loyal-kart.vercel.app`.
+     Django's CORS allowlist includes the frontend origin.
 2. **Backend**
    - Root Directory: `backend`
    - Framework Preset: Django (detected from `manage.py`)
@@ -54,8 +53,9 @@ for any additional custom domains. HTTPS proxy handling is enabled when
 affected domains are HTTPS-only.
 
 For local development, set `VITE_DJANGO_BASE_URL` to the local or remote API
-origin in `frontend/.env`. Production builds use relative `/api` and `/media`
-paths, which are proxied by the frontend Vercel project.
+origin in `frontend/.env`. Production builds use the backend URL configured in
+`frontend/src/utils/api.js`; keep the backend's CORS allowlist updated with the
+frontend domain.
 
 ## Database and migrations
 
@@ -79,17 +79,31 @@ service access controls and whether the selected Vercel plan has stable
 outbound IPs that can be allowlisted. Vercel uses dynamic outbound IPs by
 default; do not assume a single Vercel IP is sufficient.
 
-Run migrations once against the production database before serving traffic.
-From a secured shell with the backend's production environment variables
-loaded:
+The `store_category` table is created by the existing
+`store.0001_initial` migration. Deploying the backend does **not** apply Django
+migrations automatically. Run them once against the backend Vercel project's
+Production database before serving traffic. From PowerShell, link this
+directory to the **backend** Vercel project (not the frontend project), ensure
+the Python environment has `requirements.txt` installed, and review the plan:
 
 ```powershell
 Set-Location backend
-python manage.py migrate --plan
-python manage.py migrate
+npx vercel@latest link
+npx vercel@latest env run -e production -- python manage.py migrate --plan
 ```
 
-Never commit production credentials or `.env` files.
+If the plan is expected, apply the migrations and confirm the store migrations
+are marked `[X]`:
+
+```powershell
+npx vercel@latest env run -e production -- python manage.py migrate
+npx vercel@latest env run -e production -- python manage.py showmigrations store
+```
+
+`vercel env run` supplies the linked Vercel project's environment variables
+directly to the command; it does not write them to an environment file. Back up
+the production database before applying migrations. Never commit production
+credentials or `.env` files.
 
 ## Static files and uploads
 
