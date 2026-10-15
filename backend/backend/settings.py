@@ -213,7 +213,7 @@ default_cors_allowed_origins = (
     'http://127.0.0.1:5173,http://127.0.0.1:5174,'
     'https://e-commerce-1-ussz.onrender.com,'
     'https://e-commerce-u6dl-deafy0rx6-loyalsam.vercel.app,'
-    'https://e-commerce-1zx3.vercel.app'
+    'https://loyalkart.vercel.app/'
 )
 cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
 
