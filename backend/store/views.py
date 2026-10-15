@@ -1,7 +1,9 @@
 import logging
 from decimal import Decimal
 
+from cloudinary.exceptions import Error as CloudinaryError
 from django.db import DatabaseError, transaction
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -10,6 +12,7 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.views import TokenObtainPairView
+from requests.exceptions import RequestException
 
 from .models import Cart, CartItem, Category, Order, OrderItem, Product, UserProfile
 from .serializers import (
@@ -251,6 +254,17 @@ def create_product(req):
         first_error = next(iter(input_serializer.errors.values()))[0]
         return Response({'error': str(first_error)}, status=status.HTTP_400_BAD_REQUEST)
 
+    if req.FILES.get('image') and not settings.CLOUDINARY_URL:
+        return Response(
+            {
+                'error': (
+                    'Image uploads require persistent storage. Configure '
+                    'CLOUDINARY_URL on the backend Vercel project and redeploy.'
+                )
+            },
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
     try:
         product = input_serializer.save()
     except DatabaseError:
@@ -258,6 +272,12 @@ def create_product(req):
         return Response(
             {'error': 'Unable to create product. Please try again.'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    except (CloudinaryError, OSError, RequestException):
+        logger.exception('Image storage error while creating product for user_id=%s', req.user.pk)
+        return Response(
+            {'error': 'Unable to store the product image. Please try again.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
     return Response(

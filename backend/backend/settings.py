@@ -8,6 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
+CLOUDINARY_URL = os.getenv('CLOUDINARY_URL', '').strip()
 
 
 def _env_bool(name, default=False):
@@ -40,6 +41,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'store',
 ]
+if CLOUDINARY_URL:
+    INSTALLED_APPS += ['cloudinary_storage', 'cloudinary']
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -159,6 +162,11 @@ STORAGES = {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
+if CLOUDINARY_URL:
+    CLOUDINARY_STORAGE = {'SECURE': True}
+    STORAGES['default'] = {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+    }
 
 SECURE_SSL_REDIRECT = _env_bool('SECURE_SSL_REDIRECT')
 SESSION_COOKIE_SECURE = _env_bool('SESSION_COOKIE_SECURE', not DEBUG)

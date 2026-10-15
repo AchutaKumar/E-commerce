@@ -110,9 +110,16 @@ credentials or `.env` files.
 Vercel detects Django's `STATIC_ROOT` and runs `collectstatic` during the
 backend build. The included `backend/media` product images are available to
 the backend deployment. Vercel Function filesystems are not persistent:
-images uploaded through the admin interface can disappear after an invocation
-or deployment. Configure persistent object storage for product uploads before
-relying on admin uploads in production.
+product image uploads use Cloudinary so they persist across function
+invocations and deployments.
+
+Create a Cloudinary account, copy its `CLOUDINARY_URL` from the Cloudinary
+dashboard's API environment variable, and add it in the backend Vercel
+project's **Settings → Environment Variables** as a **sensitive** value named
+`CLOUDINARY_URL`. Enable it for Production (and Preview if needed), then
+redeploy the backend. Keep the value private and never commit it to the
+repository. Until it is configured, the API returns a clear `503` for image
+uploads; products without an image can still be created.
 
 ## Local checks
 

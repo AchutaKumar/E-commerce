@@ -253,7 +253,10 @@ class StoreAPITests(TestCase):
 			'category': self.category.pk,
 			'image': valid_image,
 		}
-		with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+		with TemporaryDirectory() as media_root, override_settings(
+			MEDIA_ROOT=media_root,
+			CLOUDINARY_URL='cloudinary://test:test@cloud',
+		):
 			created = self.client.post(
 				'/api/products/create/',
 				admin_payload,
@@ -264,6 +267,45 @@ class StoreAPITests(TestCase):
 		created_product = Product.objects.get(name='New item')
 		self.assertEqual(created_product.price, Decimal('25.50'))
 		self.assertTrue(created_product.image.name)
+
+	def test_admin_product_image_requires_persistent_storage(self):
+		admin = User.objects.create_user(username='image-admin', password='password', is_staff=True)
+		self.client.force_authenticate(user=admin)
+
+		image_file = BytesIO()
+		Image.new('RGB', (2, 2), color='green').save(image_file, format='PNG')
+		payload = {
+			'name': 'Image storage check',
+			'price': '12.50',
+			'category': self.category.pk,
+			'image': SimpleUploadedFile(
+				'storage-check.png',
+				image_file.getvalue(),
+				content_type='image/png',
+			),
+		}
+
+		with override_settings(CLOUDINARY_URL=''):
+			response = self.client.post(
+				'/api/products/create/',
+				payload,
+				format='multipart',
+			)
+
+		self.assertEqual(response.status_code, 503)
+		self.assertIn('CLOUDINARY_URL', response.data['error'])
+		self.assertFalse(Product.objects.filter(name='Image storage check').exists())
+
+		payload.pop('image')
+		payload['name'] = 'No-image product'
+		no_image_response = self.client.post(
+			'/api/products/create/',
+			payload,
+			format='multipart',
+		)
+
+		self.assertEqual(no_image_response.status_code, 201)
+		self.assertFalse(Product.objects.get(name='No-image product').image)
 
 	def test_product_filters_remain_paginated(self):
 		for index in range(13):
