@@ -52,15 +52,17 @@ function ProductDetail() {
 
     const { addToCart } = useCart();
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!isAuthenticated()) {
             alert("Please log in to add items to your cart.");
             navigate('/login');
             return;
         }
-        addToCart(product, quantity);
-        setAddedToCart(true);
-        setTimeout(() => setAddedToCart(false), 2000);
+        const added = await addToCart(product, quantity);
+        if (added) {
+            setAddedToCart(true);
+            setTimeout(() => setAddedToCart(false), 2000);
+        }
     };
 
     const handleToggleWatchlist = () => {

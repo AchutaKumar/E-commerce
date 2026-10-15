@@ -8,14 +8,19 @@ const CartContext = createContext()
 export const CartProvider = ({ children }) => {
     const navigate = useNavigate();
     const requestCounter = useRef(0);
+    const cartItemsRef = useRef(null);
     const [cartItems, setCartItems] = useState(() => {
         try {
             const saved = localStorage.getItem('cartItems');
-            return saved ? JSON.parse(saved) : [];
+            const items = saved ? JSON.parse(saved) : [];
+            cartItemsRef.current = items;
+            return items;
         } catch {
+            cartItemsRef.current = [];
             return [];
         }
     });
+    const cartLoadedRef = useRef(false);
     const [total, setTotal] = useState(() => {
         try {
             const saved = localStorage.getItem('cartTotal');
@@ -37,6 +42,7 @@ export const CartProvider = ({ children }) => {
     const updateCartState = (data) => {
         const items = data.item || [];
         const t = parseFloat(data.total) || 0;
+        cartItemsRef.current = items;
         setCartItems(items);
         setTotal(t);
         localStorage.setItem('cartItems', JSON.stringify(items));
@@ -48,34 +54,42 @@ export const CartProvider = ({ children }) => {
             const res = await authFetch(apiUrl('/api/cart/'))
             const data = await res.json()
             updateCartState(data)
+            return true;
         } catch (error) {
             console.error('Error fetching cart:', error)
+            return false;
+        } finally {
+            cartLoadedRef.current = true;
         }
     }
 
     const token = getAccessToken();
     useEffect(() => { 
         if (isAuthenticated()) {
+            cartLoadedRef.current = false;
             fetchCart()
         } else {
             clearCart()
+            cartLoadedRef.current = true;
         }
     }, [token])
 
     const addToCart = async (product, quantity = 1) => {
-        const product_id = typeof product === 'object' ? product.id : product;
-        const previousCartItems = [...cartItems];
-        const previousTotal = total;
+        if (!cartLoadedRef.current) {
+            await fetchCart();
+        }
 
-        const existingItem = cartItems.find(item => item.product === product_id);
+        const product_id = typeof product === 'object' ? product.id : product;
+        const currentCartItems = cartItemsRef.current || cartItems;
+        const existingItem = currentCartItems.find(
+            item => String(item.product) === String(product_id)
+        );
         if (existingItem) {
-            const newCartItems = cartItems.map(item =>
-                item.product === product_id ? { ...item, quantity: item.quantity + quantity } : item
-            );
-            const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
-            setCartItems(newCartItems);
-            setTotal(newTotal);
-        } else if (typeof product === 'object') {
+            alert("The item was already in Cart");
+            return false;
+        }
+
+        if (typeof product === 'object') {
             const newItem = {
                 id: `temp-${Date.now()}`,
                 product: product.id,
@@ -84,8 +98,9 @@ export const CartProvider = ({ children }) => {
                 product_price: product.price,
                 product_image: product.image
             };
-            const newCartItems = [...cartItems, newItem];
+            const newCartItems = [...currentCartItems, newItem];
             const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
+            cartItemsRef.current = newCartItems;
             setCartItems(newCartItems);
             setTotal(newTotal);
         }
@@ -104,12 +119,14 @@ export const CartProvider = ({ children }) => {
             if (currentReq === requestCounter.current) {
                 updateCartState(data)
             }
+            return true;
         }
         catch (error) {
             console.error('Error adding to cart:', error)
             if (currentReq === requestCounter.current) {
                 await fetchCart();
             }
+            return false;
         }
     }
 
@@ -117,6 +134,7 @@ export const CartProvider = ({ children }) => {
         const newCartItems = cartItems.filter(item => item.id !== itemId);
         const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
         
+        cartItemsRef.current = newCartItems;
         setCartItems(newCartItems);
         setTotal(newTotal);
 
@@ -159,6 +177,7 @@ export const CartProvider = ({ children }) => {
         );
         const newTotal = newCartItems.reduce((acc, item) => acc + (parseFloat(item.product_price) * item.quantity), 0);
         
+        cartItemsRef.current = newCartItems;
         setCartItems(newCartItems);
         setTotal(newTotal);
 
@@ -189,6 +208,7 @@ export const CartProvider = ({ children }) => {
     }
 
     const clearCart = () => {
+        cartItemsRef.current = [];
         setCartItems([])
         setTotal(0)
         localStorage.removeItem('cartItems');
