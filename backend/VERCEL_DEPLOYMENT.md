@@ -15,8 +15,9 @@ domain before deploying:
 1. **Frontend**
    - Root Directory: `frontend`
    - Framework Preset: Vite
-   - Production API requests use `https://loyal-kart.vercel.app`. The
-     `VITE_DJANGO_BASE_URL` override is only used for local development.
+   - The frontend sends API requests to its own `/api/...` path. Its Vercel
+     rewrites forward `/api` and `/media` to `https://loyal-kart.vercel.app`,
+     avoiding browser cross-origin requests.
 2. **Backend**
    - Root Directory: `backend`
    - Framework Preset: Django (detected from `manage.py`)
@@ -53,8 +54,8 @@ for any additional custom domains. HTTPS proxy handling is enabled when
 affected domains are HTTPS-only.
 
 For local development, set `VITE_DJANGO_BASE_URL` to the local or remote API
-origin in `frontend/.env`. Production builds ignore this variable and call
-`https://loyal-kart.vercel.app`.
+origin in `frontend/.env`. Production builds use relative `/api` and `/media`
+paths, which are proxied by the frontend Vercel project.
 
 ## Database and migrations
 
