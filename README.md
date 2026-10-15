@@ -129,6 +129,25 @@ Make sure you have the following installed:
 
 ---
 
+## ☁️ Deploying to Vercel
+
+Deploy this monorepo as two Vercel projects connected to the same Git
+repository:
+
+- Frontend project: set the Root Directory to `frontend` and configure
+  `VITE_DJANGO_BASE_URL` to the backend project's public HTTPS URL.
+- Backend project: set the Root Directory to `backend` and configure the
+  Django secret, production MySQL credentials, and
+  `CORS_ALLOWED_ORIGINS` to include the frontend's public origin.
+
+The backend requires an externally hosted, reachable MySQL database. Apply
+database migrations before serving traffic. Vercel does not provide persistent
+storage for admin-uploaded images; use object storage for uploads. See the
+[Vercel deployment guide](backend/VERCEL_DEPLOYMENT.md) for setup details and
+environment variables.
+
+---
+
 ## 🛠️ Tech Stack
 
 **Frontend:**

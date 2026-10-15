@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from urllib.parse import urlsplit
 from dotenv import load_dotenv
 from datetime import timedelta
 from django.core.exceptions import ImproperlyConfigured
@@ -91,6 +92,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DATABASE_ENV_VARS = ('DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT')
+if _env_bool('VERCEL'):
+    missing_database_vars = [
+        name for name in DATABASE_ENV_VARS if not os.getenv(name, '').strip()
+    ]
+    if missing_database_vars:
+        raise ImproperlyConfigured(
+            'Set the following database environment variables on Vercel: '
+            + ', '.join(missing_database_vars)
+        )
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -156,7 +168,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS')
 SECURE_HSTS_PRELOAD = _env_bool('SECURE_HSTS_PRELOAD')
 SECURE_PROXY_SSL_HEADER = (
     ('HTTP_X_FORWARDED_PROTO', 'https')
-    if _env_bool('TRUST_PROXY_SSL_HEADER')
+    if _env_bool('TRUST_PROXY_SSL_HEADER', _env_bool('VERCEL'))
     else None
 )
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -164,24 +176,43 @@ SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 X_FRAME_OPTIONS = 'DENY'
 
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv(
-        'ALLOWED_HOSTS',
-        'e-commerce-7dwo.onrender.com,localhost,127.0.0.1,https://e-commerce-u6dl-4x5gn9ftp-loyalsam.vercel.app/',
-    ).split(',')
-    if host.strip()
-]
+def _hostname(value):
+    candidate = value.strip()
+    if not candidate:
+        return None
+    parsed = urlsplit(candidate if '://' in candidate else f'//{candidate}')
+    return parsed.hostname
+
+
+ALLOWED_HOSTS = []
+for configured_host in os.getenv(
+    'ALLOWED_HOSTS',
+    'e-commerce-7dwo.onrender.com,localhost,127.0.0.1',
+).split(','):
+    host = _hostname(configured_host)
+    if host and host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
+
+for vercel_host_variable in ('VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL'):
+    vercel_host = os.getenv(vercel_host_variable, '').strip()
+    if vercel_host:
+        host = _hostname(vercel_host)
+        if host and host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host)
+
+default_cors_allowed_origins = (
+    'http://localhost:3000,http://localhost:5173,http://localhost:5174,'
+    'http://127.0.0.1:5173,http://127.0.0.1:5174'
+)
+cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS')
+if _env_bool('VERCEL') and not cors_allowed_origins:
+    raise ImproperlyConfigured(
+        'CORS_ALLOWED_ORIGINS must include the frontend origin on Vercel.'
+    )
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip().rstrip('/')
-    for origin in os.getenv(
-        'CORS_ALLOWED_ORIGINS',
-        'http://localhost:3000,http://localhost:5173,http://localhost:5174,'
-        'http://127.0.0.1:5173,http://127.0.0.1:5174,'
-        'https://e-commerce-1-ussz.onrender.com,'
-        'https://e-commerce-u6dl-deafy0rx6-loyalsam.vercel.app',
-    ).split(',')
+    for origin in (cors_allowed_origins or default_cors_allowed_origins).split(',')
     if origin.strip()
 ]
 
