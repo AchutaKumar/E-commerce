@@ -207,7 +207,10 @@ default_cors_allowed_origins = (
 cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS')
 if _env_bool('VERCEL') and not cors_allowed_origins:
     raise ImproperlyConfigured(
-        'CORS_ALLOWED_ORIGINS must include the frontend origin on Vercel.'
+        'Set CORS_ALLOWED_ORIGINS in the backend Vercel project under '
+        'Settings > Environment Variables to the frontend origin, for example '
+        'https://your-shop-project.vercel.app (scheme and domain only; '
+        'no trailing slash), then redeploy.'
     )
 
 CORS_ALLOWED_ORIGINS = [

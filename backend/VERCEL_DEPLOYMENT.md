@@ -40,6 +40,10 @@ Configure these on the backend Vercel project:
   `https://your-shop-project.vercel.app`, with no trailing slash. Add any
   additional trusted frontend origins as comma-separated values.
 
+Add it in the backend Vercel project under **Settings → Environment
+Variables** for every environment you deploy, then redeploy the backend.
+Use the frontend project's domain, not the backend domain and not a URL path.
+
 The backend adds Vercel's `VERCEL_URL` and
 `VERCEL_PROJECT_PRODUCTION_URL` to `ALLOWED_HOSTS`. Set `ALLOWED_HOSTS` only
 for any additional custom domains. HTTPS proxy handling is enabled when
