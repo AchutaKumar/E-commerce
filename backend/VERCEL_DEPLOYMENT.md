@@ -15,16 +15,15 @@ domain before deploying:
 1. **Frontend**
    - Root Directory: `frontend`
    - Framework Preset: Vite
-   - Set `VITE_DJANGO_BASE_URL` to the backend's public HTTPS origin, for
-     example `https://your-api-project.vercel.app` (no trailing slash).
+   - Production API requests use `https://loyal-kart.vercel.app`. The
+     `VITE_DJANGO_BASE_URL` override is only used for local development.
 2. **Backend**
    - Root Directory: `backend`
    - Framework Preset: Django (detected from `manage.py`)
    - Set the environment variables listed below.
 
-Set environment variables for each environment you will deploy (Production,
-Preview, and Development). Redeploy after changing build-time frontend
-variables.
+Set backend environment variables for each environment you will deploy
+(Production, Preview, and Development).
 
 ## Backend environment variables
 
@@ -53,8 +52,9 @@ for any additional custom domains. HTTPS proxy handling is enabled when
 `VERCEL` is set. Leave HSTS preload/subdomain settings disabled unless all
 affected domains are HTTPS-only.
 
-Do not set `VITE_DJANGO_BASE_URL` to localhost, a Render URL, or the frontend
-origin. The frontend must call the backend's Vercel origin.
+For local development, set `VITE_DJANGO_BASE_URL` to the local or remote API
+origin in `frontend/.env`. Production builds ignore this variable and call
+`https://loyal-kart.vercel.app`.
 
 ## Database and migrations
 
@@ -62,6 +62,21 @@ Provision a managed MySQL database and make sure its network access rules allow
 connections from the backend's Vercel deployment. Back up and migrate any
 existing production data separately; deploying the code does not migrate or
 copy the local database.
+
+### Aiven connection errors
+
+If the runtime log reports a name-resolution error (for example, `NXDOMAIN` or
+`getaddrinfo failed`), open the Aiven MySQL service and copy its current
+hostname and port from the service's connection information. Set `DB_HOST` to
+the hostname only (no `https://`, port, or trailing path) and `DB_PORT` to the
+displayed port in the **backend Vercel project's** environment variables. Make
+sure the Aiven service is running, then redeploy. Do not reuse a hostname from
+an old service or guess one from the service name.
+
+If the hostname resolves but TCP connections still time out, check Aiven's
+service access controls and whether the selected Vercel plan has stable
+outbound IPs that can be allowlisted. Vercel uses dynamic outbound IPs by
+default; do not assume a single Vercel IP is sufficient.
 
 Run migrations once against the production database before serving traffic.
 From a secured shell with the backend's production environment variables
