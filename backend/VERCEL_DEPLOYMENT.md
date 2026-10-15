@@ -38,9 +38,9 @@ Configure these on the backend Vercel project:
   reachable from Vercel; loopback hosts such as `localhost` will not work.
 - `CORS_ALLOWED_ORIGINS` (recommended): the exact frontend origin, such as
   `https://your-shop-project.vercel.app`, with no trailing slash. Add any
-  additional trusted frontend origins as comma-separated values. If omitted,
-  the backend allows the existing project frontend domains and local
-  development origins by default.
+  additional trusted frontend origins as comma-separated values. The deployed
+  `https://e-commerce-1zx3.vercel.app` frontend and local development origins
+  are included by default; configured origins are added to these defaults.
 
 For a custom frontend domain, add it in the backend Vercel project under
 **Settings → Environment Variables** for every environment you deploy, then

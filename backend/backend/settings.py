@@ -204,15 +204,17 @@ default_cors_allowed_origins = (
     'http://localhost:3000,http://localhost:5173,http://localhost:5174,'
     'http://127.0.0.1:5173,http://127.0.0.1:5174,'
     'https://e-commerce-1-ussz.onrender.com,'
-    'https://e-commerce-u6dl-deafy0rx6-loyalsam.vercel.app'
+    'https://e-commerce-u6dl-deafy0rx6-loyalsam.vercel.app,'
+    'https://e-commerce-1zx3.vercel.app'
 )
 cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
 
-CORS_ALLOWED_ORIGINS = [
+configured_cors_origins = [
     origin.strip().rstrip('/')
-    for origin in (cors_allowed_origins or default_cors_allowed_origins).split(',')
+    for origin in (default_cors_allowed_origins + ',' + cors_allowed_origins).split(',')
     if origin.strip()
 ]
+CORS_ALLOWED_ORIGINS = list(dict.fromkeys(configured_cors_origins))
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
