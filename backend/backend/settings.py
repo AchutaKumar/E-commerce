@@ -202,16 +202,11 @@ for vercel_host_variable in ('VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL'):
 
 default_cors_allowed_origins = (
     'http://localhost:3000,http://localhost:5173,http://localhost:5174,'
-    'http://127.0.0.1:5173,http://127.0.0.1:5174'
+    'http://127.0.0.1:5173,http://127.0.0.1:5174,'
+    'https://e-commerce-1-ussz.onrender.com,'
+    'https://e-commerce-u6dl-deafy0rx6-loyalsam.vercel.app'
 )
-cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS')
-if _env_bool('VERCEL') and not cors_allowed_origins:
-    raise ImproperlyConfigured(
-        'Set CORS_ALLOWED_ORIGINS in the backend Vercel project under '
-        'Settings > Environment Variables to the frontend origin, for example '
-        'https://your-shop-project.vercel.app (scheme and domain only; '
-        'no trailing slash), then redeploy.'
-    )
+cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip().rstrip('/')

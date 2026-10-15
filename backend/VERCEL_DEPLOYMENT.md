@@ -36,13 +36,16 @@ Configure these on the backend Vercel project:
 - `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`: credentials for
   the production MySQL database. The database must be hosted outside Vercel and
   reachable from Vercel; loopback hosts such as `localhost` will not work.
-- `CORS_ALLOWED_ORIGINS`: the exact frontend origin, such as
+- `CORS_ALLOWED_ORIGINS` (recommended): the exact frontend origin, such as
   `https://your-shop-project.vercel.app`, with no trailing slash. Add any
-  additional trusted frontend origins as comma-separated values.
+  additional trusted frontend origins as comma-separated values. If omitted,
+  the backend allows the existing project frontend domains and local
+  development origins by default.
 
-Add it in the backend Vercel project under **Settings → Environment
-Variables** for every environment you deploy, then redeploy the backend.
-Use the frontend project's domain, not the backend domain and not a URL path.
+For a custom frontend domain, add it in the backend Vercel project under
+**Settings → Environment Variables** for every environment you deploy, then
+redeploy the backend. Use the frontend project's domain, not the backend
+domain and not a URL path.
 
 The backend adds Vercel's `VERCEL_URL` and
 `VERCEL_PROJECT_PRODUCTION_URL` to `ALLOWED_HOSTS`. Set `ALLOWED_HOSTS` only
